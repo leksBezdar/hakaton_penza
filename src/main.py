@@ -1,12 +1,14 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from src.auth.routers import router
+from src.films.routers import router as films_router
 
 app = FastAPI(
     title='AsQi'
 )
 
 app.include_router(router, tags=["Registration"])
+app.include_router(films_router, tags=["Films"])
 
 
 
