@@ -11,8 +11,9 @@ from .config import (
                     )
 
 class UserBase(BaseModel):
-    email: Optional[EmailStr]
-    username: Optional[str]
+    email: EmailStr
+    username: str
+    is_superuser: bool = Field(False)
     
 
 class UserCreate(UserBase):
@@ -42,8 +43,6 @@ class UserUpdate(UserBase):
 
 class User(UserBase):
     id: str
-    email: str
-    username: str
     
     class Config:
         from_attributes = True
