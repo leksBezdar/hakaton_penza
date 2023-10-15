@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from src.auth.routers import router
+from fastapi.middleware.cors import CORSMiddleware
+
 from src.films.routers import router as films_router
 
 app = FastAPI(
@@ -9,6 +11,19 @@ app = FastAPI(
 
 app.include_router(router, tags=["Registration"])
 app.include_router(films_router, tags=["Films"])
+
+origins = [
+    "*"
+]
+
+# Добавление middleware для CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 
