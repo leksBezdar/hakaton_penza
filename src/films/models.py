@@ -31,6 +31,13 @@ class Film(Base):
     premiere_world: Mapped[str] = mapped_column(nullable=False)
     age_rating: Mapped[str] = mapped_column(nullable=False)
     
-    
     average_rating: Mapped[float] = mapped_column(nullable=True)
     
+
+class UserFilmRelationship(Base):
+    __tablename__ = "user_film_relationships"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    film_id: Mapped[int] = mapped_column(ForeignKey("films.id"))
+    relationship_type: Mapped[str] = mapped_column(nullable=False)

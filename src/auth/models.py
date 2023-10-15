@@ -16,7 +16,6 @@ class User(Base):
     username: Mapped[str] = mapped_column(nullable=False, unique=True)
     is_superuser: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     hashed_password: Mapped[str] = mapped_column(nullable=False)
-
     
     
 class Refresh_token(Base):

@@ -92,7 +92,12 @@ class FilmCRUD:
             Film: Обновленная запись о фильме.
 
         """
-        obj_in = schemas.FilmUpdate(**film_in.model_dump())
+        
+        obj_in = {}
+        for key, value in film_in.model_dump().items():
+            if value is not None:
+                obj_in[key] = value
+            
 
         film_update = await FilmDAO.update(
                 self.db,

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, constr
 from typing import List, Optional
 
 
@@ -23,6 +23,11 @@ class FilmBase(BaseModel):
     premiere_russia: Optional[str]
     premiere_world: str
     age_rating: str
+    average_rating: float
+    
+    age_rating: constr(
+        pattern='^(G|P|PG13|R|NC17)$'
+    )
 
 
 # Схема для создания записи (CRUD - Create)
@@ -38,7 +43,28 @@ class FilmRead(FilmBase):
 
 # Схема для обновления записи (CRUD - Update)
 class FilmUpdate(FilmBase):
-    average_rating: Optional[float]
+    title: Optional[str] = None
+    poster: Optional[str] = None
+    trailer: Optional[str] = None
+    created_at: Optional[int] = None
+    country: Optional[str] = None
+    genres: Optional[List[str]] = None
+    year: Optional[int] = None
+    director: Optional[str] = None
+    writers: Optional[List[str]] = None
+    producers: Optional[List[str]] = None
+    cinematographers: Optional[List[str]] = None
+    composers: Optional[List[str]] = None
+    art_directors: Optional[List[str]] = None
+    editor: Optional[List[str]] = None
+    budget: Optional[str] = None
+    box_office_world: Optional[str] = None
+    premiere_russia: Optional[str] = None
+    premiere_world: Optional[str] = None
+    age_rating: Optional[str] = None
+    average_rating: Optional[float] = None
+
+    average_rating: Optional[float] = None
 
 
 # Схема для удаления записи (CRUD - Delete)

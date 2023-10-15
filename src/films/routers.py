@@ -9,7 +9,6 @@ from . import schemas
 
 from .models import Film
 from .service import DatabaseManager
-from src.auth.service import DatabaseManager as auth_manager
 from ..database import get_async_session
 
 
@@ -50,7 +49,7 @@ async def get_all_films(
     return await film_crud.get_all_films(offset=offset, limit=limit)
 
 
-@router.put("/update_film", response_model=schemas.FilmUpdate)
+@router.patch("/update_film", response_model=schemas.FilmUpdate)
 async def update_film(
     film_id: int,
     film_data: schemas.FilmUpdate,

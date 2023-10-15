@@ -65,10 +65,19 @@ def upgrade() -> None:
         sa.Column('premiere_russia', sa.String()),
         sa.Column('premiere_world', sa.String(), nullable=False),
         sa.Column('age_rating', sa.String(), nullable=False),
-        sa.Column('average_rating', sa.Float()),
+        sa.Column('average_rating', sa.Float(), nullable=True),
         sa.PrimaryKeyConstraint('id')
     )
     
+    op.create_table('user_film_relationships',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('user_id', sa.String(), nullable=False),
+        sa.Column('film_id', sa.Integer(), nullable=False),
+        sa.Column('relationship_type', sa.String(), nullable=False),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['film_id'], ['films.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+)
     # ### end Alembic commands ###
 
 
@@ -78,6 +87,7 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_refresh_tokens_id'), table_name='refresh_tokens')
     op.drop_table('refresh_tokens')
     op.drop_index(op.f('ix_users_id'), table_name='users')
+    op.drop_table('user_film_relationships')
     op.drop_table('users')
     op.drop_table('films')
     # ### end Alembic commands ###
