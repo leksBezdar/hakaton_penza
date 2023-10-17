@@ -24,7 +24,7 @@ class FilmBase(BaseModel):
     premiere_world: str
     age_rating: str
     average_rating: float
-    
+
     age_rating: constr(
         pattern='^(G|P|PG13|R|NC17)$'
     )

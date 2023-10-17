@@ -8,4 +8,3 @@ rem Миграции
 alembic upgrade head
 
 rem Ожидание нажатия любой клавиши перед закрытием окна
-pause

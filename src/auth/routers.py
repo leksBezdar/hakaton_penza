@@ -27,7 +27,7 @@ async def create_user(
 ) -> User:
     db_manager = DatabaseManager(db)
     user_crud = db_manager.user_crud
-    
+
     return await user_crud.create_user(user=user_data)
 
 
@@ -39,15 +39,15 @@ async def login(
     credentials: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_async_session),
 ):
-    
+
     db_manager = DatabaseManager(db)
     user_crud = db_manager.user_crud
     token_crud = db_manager.token_crud
 
     user = await user_crud.authenticate_user(username=credentials.username, password=credentials.password)
-    
-    token = await token_crud.create_tokens(user_id = user.id)
-    
+
+    token = await token_crud.create_tokens(user_id=user.id)
+
     response.set_cookie(
         'access_token',
         token.access_token,
@@ -60,9 +60,8 @@ async def login(
         max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         httponly=True
     )
-    
-    return token
 
+    return token
 
 
 # Точка выхода пользователя
@@ -72,19 +71,19 @@ async def logout(
     response: Response,
     db: AsyncSession = Depends(get_async_session),
 ):
-   
+
     db_manager = DatabaseManager(db)
     user_crud = db_manager.user_crud
-    
+
     await user_crud.logout(refresh_token=request.cookies.get('refresh_token'))
-    
+
     response = JSONResponse(content={
         "message": "logout successful",
     })
-        
+
     response.delete_cookie(key="access_token")
     response.delete_cookie(key="refresh_token")
-    
+
     return response
 
 
@@ -93,12 +92,12 @@ async def get_current_user(
     db: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(get_current_user)
 ) -> Optional[User]:
-    
+
     db_manager = DatabaseManager(db)
     user_crud = db_manager.user_crud
-    
-    user = await user_crud.get_existing_user(username = current_user.username)
-    
+
+    user = await user_crud.get_existing_user(username=current_user.username)
+
     return user
 
 
@@ -113,7 +112,7 @@ async def get_user(
 
     db_manager = DatabaseManager(db)
     user_crud = db_manager.user_crud
-    
+
     user = await user_crud.get_existing_user(username=username, email=email, user_id=user_id)
 
     return user
@@ -128,7 +127,7 @@ async def get_all_users(
 ):
     db_manager = DatabaseManager(db)
     user_crud = db_manager.user_crud
-    
+
     return await user_crud.get_all_users(offset=offset, limit=limit)
 
 
@@ -138,10 +137,10 @@ async def refresh_token(
     response: Response,
     db: AsyncSession = Depends(get_async_session),
 ):
-    
+
     db_manager = DatabaseManager(db)
     token_crud = db_manager.token_crud
-    
+
     new_token = await token_crud.refresh_token(request.cookies.get("refresh_token"))
 
     response.set_cookie(
@@ -156,8 +155,7 @@ async def refresh_token(
         max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         httponly=True,
     )
-    
-    
+
     return new_token
 
 
@@ -168,16 +166,16 @@ async def delete_user_sessions(
     user_id: str = None,
     db: AsyncSession = Depends(get_async_session),
 ):
-    
+
     db_manager = DatabaseManager(db)
     user_crud = db_manager.user_crud
-    
+
     await user_crud.abort_user_sessions(username=username, email=email, user_id=user_id)
-    
+
     response = JSONResponse(content={
         "message": "Delete successful",
     })
-    
+
     return response
 
 
@@ -188,14 +186,14 @@ async def delete_user(
     user_id: str = None,
     db: AsyncSession = Depends(get_async_session),
 ):
-    
+
     db_manager = DatabaseManager(db)
     user_crud = db_manager.user_crud
-    
+
     await user_crud.delete_user(username=username, email=email, user_id=user_id)
-    
+
     response = JSONResponse(content={
         "message": "Delete successful",
     })
-    
+
     return response

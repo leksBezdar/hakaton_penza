@@ -9,21 +9,28 @@ from sqlalchemy.dialects.postgresql import ARRAY
 
 from ..database import Base
 
+
 class User(Base):
     __tablename__ = "users"
 
     id: Mapped[str] = mapped_column(primary_key=True, index=True)
     email: Mapped[str] = mapped_column(nullable=False, unique=True)
     username: Mapped[str] = mapped_column(nullable=False, unique=True)
-    is_superuser: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    is_superuser: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False)
     hashed_password: Mapped[str] = mapped_column(nullable=False)
-    postponed_films: Mapped[list[str]] = mapped_column(ARRAY(Text), nullable=True)
-    abondoned_films: Mapped[list[str]] = mapped_column(ARRAY(Text), nullable=True)
-    current_films: Mapped[list[str]] = mapped_column(ARRAY(Text), nullable=True)
-    favorite_films: Mapped[list[str]] = mapped_column(ARRAY(Text), nullable=True)
-    finished_films: Mapped[list[str]] = mapped_column(ARRAY(Text), nullable=True)
+    postponed_films: Mapped[list[str]] = mapped_column(
+        ARRAY(Text), nullable=True)
+    abondoned_films: Mapped[list[str]] = mapped_column(
+        ARRAY(Text), nullable=True)
+    current_films: Mapped[list[str]] = mapped_column(
+        ARRAY(Text), nullable=True)
+    favorite_films: Mapped[list[str]] = mapped_column(
+        ARRAY(Text), nullable=True)
+    finished_films: Mapped[list[str]] = mapped_column(
+        ARRAY(Text), nullable=True)
 
-    
+
 class Refresh_token(Base):
     __tablename__ = 'refresh_tokens'
 

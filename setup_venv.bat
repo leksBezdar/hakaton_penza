@@ -14,4 +14,3 @@ rem Запуск сервера uvicorn
 uvicorn src.main:app --reload
 
 rem Ожидание нажатия любой клавиши перед закрытием окна
-pause

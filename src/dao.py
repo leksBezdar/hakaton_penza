@@ -60,12 +60,13 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         limit: int = 100,
         **filter_by
     ) -> List[ModelType]:
-        stmt = select(cls.model)
-
-        if filter[0]:
-            stmt = stmt.filter(text(*filter))
-
-        stmt = stmt.filter_by(**filter_by).offset(offset).limit(limit)
+        stmt = (
+            select(cls.model)
+            .filter(*filter)
+            .filter_by(**filter_by)
+            .offset(offset)
+            .limit(limit)
+        )
         result = await db.execute(stmt)
         return result.scalars().all()
 
