@@ -1,0 +1,11 @@
+version: "3.7"
+
+app:
+    build:
+      context: .
+    env_file:
+      - .env
+    container_name: fastapi_app
+    command: ["/fastapi_app/docker/app.sh"]
+    ports:
+      - 9999:8000
