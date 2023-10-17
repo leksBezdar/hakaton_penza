@@ -8,6 +8,7 @@ from .models import Film
 
 from . import schemas
 
+
 class FilmCRUD:
     """
     Класс для выполнения круд-операций с моделью Film.
@@ -92,17 +93,16 @@ class FilmCRUD:
             Film: Обновленная запись о фильме.
 
         """
-        
+
         obj_in = {}
         for key, value in film_in.model_dump().items():
             if value is not None:
                 obj_in[key] = value
-            
 
         film_update = await FilmDAO.update(
-                self.db,
-                Film.id == film_id,
-                obj_in=obj_in)
+            self.db,
+            Film.id == film_id,
+            obj_in=obj_in)
 
         await self.db.commit()
 
@@ -122,6 +122,7 @@ class FilmCRUD:
             film_title == Film.title))
 
         await self.db.commit()
+
 
 class DatabaseManager:
     """
