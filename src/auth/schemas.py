@@ -1,7 +1,7 @@
 import re
 
 from pydantic import BaseModel, EmailStr, Field, validator
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 from .config import (
     MIN_USERNAME_LENGTH as user_min_len,
@@ -14,6 +14,11 @@ class UserBase(BaseModel):
     email: EmailStr
     username: str
     is_superuser: bool = Field(False)
+    postponed_films: Optional[List] = None
+    abondoned_films: Optional[List] = None
+    current_films: Optional[List] = None
+    favorite_films: Optional[List] = None
+    finished_films: Optional[List] = None
     
 
 class UserCreate(UserBase):

@@ -39,6 +39,7 @@ async def get_film(
 
 @router.get("/read_all_films")
 async def get_all_films(
+    filter: str = None,
     offset: int = 0,
     limit: int = 10,
     db: AsyncSession = Depends(get_async_session),
@@ -46,7 +47,7 @@ async def get_all_films(
     db_manager = DatabaseManager(db)
     film_crud = db_manager.film_crud
     
-    return await film_crud.get_all_films(offset=offset, limit=limit)
+    return await film_crud.get_all_films(filter, offset=offset, limit=limit)
 
 
 @router.patch("/update_film", response_model=schemas.FilmUpdate)

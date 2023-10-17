@@ -4,7 +4,8 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from sqlalchemy import TIMESTAMP, Integer, Boolean, ForeignKey, JSON, String
+from sqlalchemy import TIMESTAMP, Integer, Boolean, ForeignKey, JSON, String, Text
+from sqlalchemy.dialects.postgresql import ARRAY
 
 from ..database import Base
 
@@ -16,7 +17,12 @@ class User(Base):
     username: Mapped[str] = mapped_column(nullable=False, unique=True)
     is_superuser: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     hashed_password: Mapped[str] = mapped_column(nullable=False)
-    
+    postponed_films: Mapped[list[str]] = mapped_column(ARRAY(Text), nullable=True)
+    abondoned_films: Mapped[list[str]] = mapped_column(ARRAY(Text), nullable=True)
+    current_films: Mapped[list[str]] = mapped_column(ARRAY(Text), nullable=True)
+    favorite_films: Mapped[list[str]] = mapped_column(ARRAY(Text), nullable=True)
+    finished_films: Mapped[list[str]] = mapped_column(ARRAY(Text), nullable=True)
+
     
 class Refresh_token(Base):
     __tablename__ = 'refresh_tokens'
