@@ -45,7 +45,6 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         
             return None
 
-
     @classmethod
     async def find_one_or_none(cls, db: AsyncSession, *filter, **filter_by) -> Optional[ModelType]:
         
