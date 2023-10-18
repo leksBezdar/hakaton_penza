@@ -76,7 +76,6 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         session: AsyncSession,
         *where,
         obj_in: Union[UpdateSchemaType, Dict[str, Any]],
-        # id: Any
     ) -> Optional[ModelType]:
 
         if isinstance(obj_in, dict):
@@ -86,7 +85,6 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
         stmt = (
             update(cls.model).
-            # where(cls.model.id == id).
             where(*where).
             values(**update_data).
             returning(cls.model)

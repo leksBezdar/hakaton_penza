@@ -1,17 +1,21 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from src.auth.routers import router
+from src.auth.routers import router as auth_router
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.films.routers import router as films_router
+from src.user.routers import router as user_router
+
 
 app = FastAPI(
     title='AsQi'
 )
 
-app.include_router(router, tags=["Registration"])
+app.include_router(auth_router, tags=["Registration"])
 app.include_router(films_router, tags=["Films"])
+app.include_router(user_router, tags=["User actions"])
+
 
 origins = [
     "*"

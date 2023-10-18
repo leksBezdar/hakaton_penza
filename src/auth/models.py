@@ -6,9 +6,11 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy import TIMESTAMP, Integer, Boolean, ForeignKey, JSON, String, Text
 from sqlalchemy.dialects.postgresql import ARRAY
+from typing import Annotated
 
 from ..database import Base
 
+user_list = Annotated[list, mapped_column(ARRAY(String), nullable=True)]
 
 class User(Base):
     __tablename__ = "users"
@@ -19,16 +21,11 @@ class User(Base):
     is_superuser: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False)
     hashed_password: Mapped[str] = mapped_column(nullable=False)
-    postponed_films: Mapped[list[str]] = mapped_column(
-        ARRAY(Text), nullable=True)
-    abondoned_films: Mapped[list[str]] = mapped_column(
-        ARRAY(Text), nullable=True)
-    current_films: Mapped[list[str]] = mapped_column(
-        ARRAY(Text), nullable=True)
-    favorite_films: Mapped[list[str]] = mapped_column(
-        ARRAY(Text), nullable=True)
-    finished_films: Mapped[list[str]] = mapped_column(
-        ARRAY(Text), nullable=True)
+    postponed_films: Mapped[user_list]
+    abondoned_films: Mapped[user_list]
+    current_films: Mapped[user_list]
+    favorite_films: Mapped[user_list]
+    finished_films: Mapped[user_list]
 
 
 class Refresh_token(Base):

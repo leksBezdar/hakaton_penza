@@ -99,6 +99,8 @@ class FilmCRUD:
             if value is not None:
                 obj_in[key] = value
 
+        print(obj_in)
+
         film_update = await FilmDAO.update(
             self.db,
             Film.id == film_id,

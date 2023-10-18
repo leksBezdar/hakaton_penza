@@ -1,6 +1,5 @@
 __pycache__/
 venv/
-.env
 TODOS.txt
 .idea/
 .vscode/
