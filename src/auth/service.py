@@ -108,6 +108,13 @@ class UserCRUD:
         refresh_token = await RefreshTokenDAO.find_one_or_none(self.db, Refresh_token.user_id == user.id)
 
         return refresh_token
+    
+    
+    async def get_user_by_access_token(self, access_token: str) -> Optional[User]:
+        
+        user_id = await TokenCrud.get_access_token_payload(self.db, access_token=access_token)
+        
+        return await self.get_existing_user(user_id=user_id)
 
     async def abort_user_sessions(self, email: str = None, username: str = None, user_id: str = None) -> None:
 

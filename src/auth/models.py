@@ -6,11 +6,12 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from sqlalchemy import TIMESTAMP, Integer, Boolean, ForeignKey, JSON, String, Text
 from sqlalchemy.dialects.postgresql import ARRAY
-from typing import Annotated
+from typing import Annotated, Any
 
+from ..films.models import Film
 from ..database import Base
 
-user_list = Annotated[list, mapped_column(ARRAY(String), nullable=True)]
+user_list = Annotated[list, mapped_column(ARRAY(Integer), nullable=False, default=[])]
 
 class User(Base):
     __tablename__ = "users"

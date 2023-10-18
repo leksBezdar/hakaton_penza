@@ -14,11 +14,11 @@ class UserBase(BaseModel):
     email: EmailStr
     username: str
     is_superuser: bool = Field(False)
-    postponed_films: Optional[List] = None
-    abondoned_films: Optional[List] = None
-    current_films: Optional[List] = None
-    favorite_films: Optional[List] = None
-    finished_films: Optional[List] = None
+    postponed_films: Optional[List] = []
+    abondoned_films: Optional[List] = []
+    current_films: Optional[List] = []
+    favorite_films: Optional[List] = []
+    finished_films: Optional[List] = []
     
 
 class UserCreate(UserBase):
