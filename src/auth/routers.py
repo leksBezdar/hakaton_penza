@@ -32,7 +32,7 @@ async def create_user(
 
 
 # Точка входа пользователя
-@router.post("/user_login/")
+@router.get("/user_login/")
 async def user_login(
     request: Request,
     response: Response,
