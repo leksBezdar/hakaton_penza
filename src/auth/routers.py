@@ -32,8 +32,8 @@ async def create_user(
 
 
 # Точка входа пользователя
-@router.get("/user_login/")
-async def user_login(
+@router.post("/login/")
+async def login(
     request: Request,
     response: Response,
     username: str,

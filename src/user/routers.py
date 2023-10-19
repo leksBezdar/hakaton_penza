@@ -19,7 +19,7 @@ router = APIRouter()
 async def update_user_list(
     token: str,
     film_id: int,
-    list_type=str,
+    list_type: str,
     db: AsyncSession = Depends(get_async_session),
 ):
       
