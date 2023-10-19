@@ -9,7 +9,8 @@ from src.user.routers import router as user_router
 
 
 app = FastAPI(
-    title='AsQi'
+    title='movieRank',
+    debug=True
 )
 
 app.include_router(auth_router, tags=["Registration"])

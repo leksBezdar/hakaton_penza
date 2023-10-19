@@ -51,7 +51,7 @@ class User(UserBase):
     
     class Config:
         from_attributes = True
-
+    
 class UserCreateDB(UserBase):
     id: str
     hashed_password: Optional[str] = None
@@ -67,5 +67,6 @@ class RefreshTokenUpdate(RefreshTokenCreate):
     user_id: Optional[str] = Field(None)
     
 class Token(BaseModel):
+    token_type: str
     access_token: str
     refresh_token: str

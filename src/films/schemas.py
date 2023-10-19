@@ -7,7 +7,6 @@ class FilmBase(BaseModel):
     title: str
     poster: str
     trailer: str
-    created_at: int
     country: str
     genres: List[str]
     year: int
