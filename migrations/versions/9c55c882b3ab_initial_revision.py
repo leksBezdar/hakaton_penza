@@ -55,7 +55,6 @@ def upgrade() -> None:
         sa.Column('title', sa.String(), nullable=False),
         sa.Column('poster', sa.String(), nullable=False),
         sa.Column('trailer', sa.String(), nullable=True),
-        sa.Column('created_at', sa.Integer(), nullable=False),
         sa.Column('country', sa.String(), nullable=False),
         sa.Column('genres', sa.ARRAY(sa.String()), nullable=False, server_default='{}'),
         sa.Column('year', sa.Integer(), nullable=False),
