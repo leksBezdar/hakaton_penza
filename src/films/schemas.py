@@ -45,7 +45,6 @@ class FilmUpdate(FilmBase):
     title: Optional[str] = None
     poster: Optional[str] = None
     trailer: Optional[str] = None
-    created_at: Optional[int] = None
     country: Optional[str] = None
     genres: Optional[List[str]] = None
     year: Optional[int] = None
@@ -64,8 +63,3 @@ class FilmUpdate(FilmBase):
     average_rating: Optional[float] = None
 
     average_rating: Optional[float] = None
-
-
-# Схема для удаления записи (CRUD - Delete)
-class FilmDelete(BaseModel):
-    id: int
