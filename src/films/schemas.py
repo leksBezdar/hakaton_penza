@@ -7,7 +7,6 @@ class FilmBase(BaseModel):
     title: str
     poster: str
     trailer: str
-    created_at: int
     country: str
     genres: List[str]
     year: int
@@ -46,7 +45,6 @@ class FilmUpdate(FilmBase):
     title: Optional[str] = None
     poster: Optional[str] = None
     trailer: Optional[str] = None
-    created_at: Optional[int] = None
     country: Optional[str] = None
     genres: Optional[List[str]] = None
     year: Optional[int] = None
