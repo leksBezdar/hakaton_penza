@@ -1,4 +1,5 @@
 from typing import Optional
+import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import or_
@@ -32,6 +33,7 @@ class FilmCRUD:
             Film: Созданная запись о фильме.
 
         """
+
         db_film = await FilmDAO.add(
             self.db,
             schemas.FilmCreate(

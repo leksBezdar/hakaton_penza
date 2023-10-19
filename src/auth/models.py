@@ -11,7 +11,7 @@ from typing import Annotated, Any
 from ..films.models import Film
 from ..database import Base
 
-user_list = Annotated[list, mapped_column(ARRAY(Integer), nullable=False, default=[])]
+user_list = Annotated[list, mapped_column(ARRAY(JSON), nullable=False, default=[])]
 
 class User(Base):
     __tablename__ = "users"

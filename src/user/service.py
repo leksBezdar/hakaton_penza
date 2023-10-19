@@ -33,9 +33,7 @@ class UserFilmCRUD:
         film_manager = FilmManager(self.db)
         user_crud = auth_manager.user_crud
         film_crud = film_manager.film_crud
-        
-        token = token.split()[1]
-        
+                
         user = await user_crud.get_user_by_access_token(access_token=token)
         film = await film_crud.get_film(film_id=film_id)
         
@@ -49,13 +47,10 @@ class UserFilmCRUD:
 
         user_list = getattr(user, user_list_attribute, [])
         user_update_data = {user_list_attribute: user_list}
-        
-        print(user_list)
-        print(user_list_attribute)
             
         if film_id not in user_list:
-            
-            user_list.append(film_id)
+
+            user_list.append({"id": film_id, "title": film.title, "poster": film.poster, "rating": film.average_rating})
             user_update = await UserDAO.update(self.db, User.id == user.id, obj_in=user_update_data)
             
             self.db.add(user_update)
@@ -65,7 +60,7 @@ class UserFilmCRUD:
             return f"Added to {list_type}"
         
         else:
-            user_list.remove(film_id)
+            user_list.remove({"id": film_id, "title": film.title, "poster": film.poster, "rating": film.average_rating})
             user_update = await UserDAO.update(self.db, User.id == user.id, obj_in=user_update_data)
             
             self.db.add(user_update)

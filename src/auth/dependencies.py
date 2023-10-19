@@ -9,12 +9,10 @@ from ..database import get_async_session
 from .service import DatabaseManager
 
 
-oauth2_scheme = OAuth2PasswordBearerWithCookie(tokenUrl="/api/auth/login")
-
 
 async def get_current_user(
+        request: Request,
         db: AsyncSession = Depends(get_async_session),
-        token: str = Depends(oauth2_scheme),
 ):
 
     db_manager = DatabaseManager(db)
@@ -22,7 +20,7 @@ async def get_current_user(
     token_crud = db_manager.token_crud
 
     try:
-        user_id = await token_crud.get_access_token_payload(token)
+        user_id = await token_crud.get_access_token_payload(request.cookies.get('access_token'))
 
     except KeyError:
         raise exceptions.InvalidCredentials

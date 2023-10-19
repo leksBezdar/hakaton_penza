@@ -88,7 +88,7 @@ async def logout(
 
 
 @router.get("/me", response_model=schemas.User)
-async def get_current_user(
+async def get_me(
     db: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(get_current_user)
 ) -> Optional[User]:
