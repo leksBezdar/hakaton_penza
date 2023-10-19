@@ -68,6 +68,11 @@ class UserFilmCRUD:
             await self.db.refresh(user_update)
             
             return f"Deleted from {list_type}"
+    
+
+    # async def create_review(self, user_id: str, film_id: int, message: str, title: str, rating: float):
+
+
 
 
 class DatabaseManager:

@@ -36,7 +36,7 @@ async def create_user(
 async def login(
     request: Request,
     response: Response,
-    credentials: OAuth2PasswordRequestForm = Depends(),
+    credentials: schemas.UserLogin,
     db: AsyncSession = Depends(get_async_session),
 ):
 
