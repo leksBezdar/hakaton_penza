@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 from sqlalchemy import ARRAY, TIMESTAMP, Float, Integer, Boolean, ForeignKey, JSON, String
 
 from ..database import Base
@@ -17,3 +18,5 @@ class Review(Base):
     film_id: Mapped[str] = mapped_column(ForeignKey("films.id", ondelete="CASCADE"))
     message: Mapped[str] = mapped_column(nullable=False)
     rating: Mapped[float] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True),
+                                                 server_default=func.now())

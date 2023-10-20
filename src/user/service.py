@@ -6,6 +6,7 @@ from sqlalchemy import or_
 
 from src.auth.models import User
 from src.user.dao import ReviewDAO
+from src.user.models import Review
 
 from ..auth.dao import UserDAO
 from ..auth.service import DatabaseManager as AuthManager
@@ -69,14 +70,21 @@ class UserFilmCRUD:
             await self.db.refresh(user_update)
             
             return f"Deleted from {list_type}"
-    
+        
 
-    async def create_review(self, review: schemas.ReviewCreate):
+class ReviewCRUD:
+
+    def __init__(self, db: AsyncSession):
+        self.db = db  
+
+    async def create_review(self, token: str, review: schemas.ReviewCreate):
 
         auth_manager = AuthManager(self.db)
         film_manager = FilmManager(self.db)
         user_crud = auth_manager.user_crud
         film_crud = film_manager.film_crud
+        
+        user = await user_crud.get_user_by_access_token(access_token=token)
                 
         film = await film_crud.get_film(film_id=review.film_id)
         if not film: 
@@ -84,7 +92,8 @@ class UserFilmCRUD:
 
         db_review = await ReviewDAO.add(
             self.db,
-            schemas.ReviewCreate(
+            schemas.ReviewCreateDB(
+                user_id=user.id,
                 **review.model_dump(),
             )
         )
@@ -94,6 +103,37 @@ class UserFilmCRUD:
         await self.db.refresh(db_review)
 
         return db_review
+    
+
+    async def get_all_reviews(self, *filter, offset: int = 0, limit: int = 100, **filter_by) -> list[Review]:
+
+        films = await ReviewDAO.find_all(self.db, *filter, offset=offset, limit=limit, **filter_by)
+
+        return films
+
+    async def update_review(self, review_id: int, review_in: schemas.ReviewUpdate):
+
+        obj_in = {}
+        for key, value in review_in.model_dump().items():
+            if value is not None:
+                obj_in[key] = value
+
+        review_update = await ReviewDAO.update(
+            self.db,
+            Review.id == review_id,
+            obj_in=obj_in)
+
+        await self.db.commit()
+
+        return review_update
+
+    async def delete_review(self, review_title: str = None, review_id: int = None) -> None:
+
+        await ReviewDAO.delete(self.db, or_(
+            review_id == Review.id,
+            review_title == Review.title))
+
+        await self.db.commit()
 
 
 
@@ -111,6 +151,7 @@ class DatabaseManager:
     def __init__(self, db: AsyncSession):
         self.db = db
         self.user_film_crud = UserFilmCRUD(db)
+        self.review_crud = ReviewCRUD(db)
 
     async def commit(self):
         await self.db.commit()

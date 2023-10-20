@@ -73,6 +73,19 @@ def upgrade() -> None:
         sa.Column('average_rating', sa.Float(), nullable=True),
         sa.PrimaryKeyConstraint('id')
     )
+    
+    op.create_table('reviews',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('title', sa.String(), nullable=False),
+        sa.Column('user_id', sa.String(), nullable=False),
+        sa.Column('film_id', sa.Integer(), nullable=False),
+        sa.Column('message', sa.String(), nullable=False),
+        sa.Column('rating', sa.Float(), nullable=False),
+        sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['film_id'], ['films.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
 
     # ### end Alembic commands ###
 
