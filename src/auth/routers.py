@@ -104,7 +104,7 @@ async def get_me(
 
 
 # Получение информации о пользователе по имени пользователя
-@router.get("/read_user", response_model=None)
+@router.get("/get_user", response_model=None)
 async def get_user(
     username: str = None,
     email: str = None,
@@ -121,7 +121,7 @@ async def get_user(
 
 
 # Получение списка всех пользователей
-@router.get("/read_all_users", response_model=List[schemas.User])
+@router.get("/get_all_users", response_model=List[schemas.User])
 async def get_all_users(
     offset: int = 0,
     limit: int = 10,

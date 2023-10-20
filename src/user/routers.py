@@ -40,12 +40,12 @@ async def create_review(
 ) -> Review:
 
     db_manager = DatabaseManager(db)
-    user_film_crud = db_manager.user_film_crud
+    review_crud = db_manager.review_crud
 
-    return await user_film_crud.create_review(token=token, review=review_data)
+    return await review_crud.create_review(token=token, review=review_data)
 
 
-@router.get("/read_all_reviews")
+@router.get("/get_all_reviews")
 async def get_all_reviews(
     offset: int = 0,
     limit: int = 10,

@@ -37,7 +37,7 @@ async def get_film(
     return await film_crud.get_film(film_title=film_title, film_id=film_id)
 
 
-@router.get("/read_all_films")
+@router.get("/get_all_films")
 async def get_all_films(
     offset: int = 0,
     limit: int = 10,
