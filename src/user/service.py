@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import or_
 
 from src.auth.models import User
+from src.user.dao import ReviewDAO
 
 from ..auth.dao import UserDAO
 from ..auth.service import DatabaseManager as AuthManager
@@ -70,7 +71,30 @@ class UserFilmCRUD:
             return f"Deleted from {list_type}"
     
 
-    # async def create_review(self, user_id: str, film_id: int, message: str, title: str, rating: float):
+    async def create_review(self, review: schemas.ReviewCreate):
+
+        auth_manager = AuthManager(self.db)
+        film_manager = FilmManager(self.db)
+        user_crud = auth_manager.user_crud
+        film_crud = film_manager.film_crud
+                
+        film = await film_crud.get_film(film_id=review.film_id)
+        if not film: 
+            return {"Message": "No film found"}
+
+        db_review = await ReviewDAO.add(
+            self.db,
+            schemas.ReviewCreate(
+                **review.model_dump(),
+            )
+        )
+
+        self.db.add(db_review)
+        await self.db.commit()
+        await self.db.refresh(db_review)
+
+        return db_review
+
 
 
 

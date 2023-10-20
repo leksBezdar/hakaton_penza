@@ -25,6 +25,7 @@ async def create_user(
     user_data: schemas.UserCreate,
     db: AsyncSession = Depends(get_async_session),
 ) -> User:
+
     db_manager = DatabaseManager(db)
     user_crud = db_manager.user_crud
 
