@@ -13,6 +13,7 @@ class Review(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(nullable=False)
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    username: Mapped[str] = mapped_column(ForeignKey("users.username", ondelete="CASCADE"))
     film_id: Mapped[str] = mapped_column(ForeignKey("films.id", ondelete="CASCADE"))
     message: Mapped[str] = mapped_column(nullable=False)
     rating: Mapped[float] = mapped_column(nullable=False)
@@ -25,7 +26,8 @@ class Comment(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    username: Mapped[str] = mapped_column(ForeignKey("users.username", ondelete="CASCADE"))
     message: Mapped[str] = mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True),
                                                  server_default=func.now())
-    replies: Mapped[list] = mapped_column(ARRAY(JSON), nullable=True, default=[])
+    parent_comment_id: Mapped[int] = mapped_column(ForeignKey("comments.id"))

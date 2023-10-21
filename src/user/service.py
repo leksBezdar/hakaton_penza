@@ -104,8 +104,9 @@ class ReviewCRUD:
         db_review = await ReviewDAO.add(
             self.db,
             schemas.ReviewCreateDB(
-                user_id=user.id,
                 **review.model_dump(),
+                user_id=user.id,
+                username=user.username,
             )
         )
 
@@ -151,21 +152,16 @@ class CommentCRUD:
     async def create_comment(self, token: str, comment: schemas.CommentCreate):
 
         auth_manager = AuthManager(self.db)
-        film_manager = FilmManager(self.db)
         user_crud = auth_manager.user_crud
-        film_crud = film_manager.film_crud
         
         user = await user_crud.get_user_by_access_token(access_token=token)
-                
-        film = await film_crud.get_film(film_id=comment.film_id)
-        if not film: 
-            raise exceptions.FilmWasNotFound
 
         db_comment = await CommentDAO.add(
             self.db,
             schemas.CommentCreateDB(
-                user_id=user.id,
                 **comment.model_dump(),
+                user_id=user.id,
+                username=user.username,
             )
         )
 
@@ -178,7 +174,7 @@ class CommentCRUD:
 
     async def get_all_comments(self, *filter, offset: int = 0, limit: int = 100, **filter_by) -> list[Comment]:
 
-        comments = await ReviewDAO.find_all(self.db, *filter, offset=offset, limit=limit, **filter_by)
+        comments = await CommentDAO.find_all(self.db, *filter, offset=offset, limit=limit, **filter_by)
 
         return comments
 
@@ -193,11 +189,9 @@ class CommentCRUD:
 
         return comment_update
 
-    async def delete_comment(self, comment_title: str = None, comment_id: int = None) -> None:
+    async def delete_comment(self, comment_id: int = None) -> None:
 
-        await ReviewDAO.delete(self.db, or_(
-            comment_id == Comment.id,
-            comment_title == Comment.title))
+        await CommentDAO.delete(self.db, comment_id == Comment.id,)
 
         await self.db.commit()
         

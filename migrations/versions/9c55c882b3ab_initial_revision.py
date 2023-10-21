@@ -78,13 +78,28 @@ def upgrade() -> None:
     op.create_table('reviews',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('title', sa.String(), nullable=False),
+        sa.Column('username', sa.String(), nullable=False),
         sa.Column('user_id', sa.String(), nullable=False),
         sa.Column('film_id', sa.Integer(), nullable=False),
         sa.Column('message', sa.String(), nullable=False),
         sa.Column('rating', sa.Float(), nullable=False),
         sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['username'], ['users.username'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['film_id'], ['films.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    
+    )
+    op.create_table('comments',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('user_id', sa.String(), nullable=False),
+        sa.Column('username', sa.String(), nullable=False),
+        sa.Column('message', sa.String(), nullable=False),
+        sa.Column('parent_comment_id', sa.Integer(), nullable=True),
+        sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['parent_comment_id'], ['comments.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['username'], ['users.username'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
 
@@ -98,6 +113,7 @@ def downgrade() -> None:
     op.drop_table('refresh_tokens')
     op.drop_index(op.f('ix_users_id'), table_name='users')
     op.drop_table('reviews')
+    op.drop_table('comments')
     op.drop_table('users')
     op.drop_table('films')
     # ### end Alembic commands ###
