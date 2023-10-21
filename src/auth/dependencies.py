@@ -1,6 +1,7 @@
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..utils import check_record_existence
 from .utils import OAuth2PasswordBearerWithCookie
 
 from . import exceptions
@@ -16,7 +17,6 @@ async def get_current_user(
 ):
 
     db_manager = DatabaseManager(db)
-    user_crud = db_manager.user_crud
     token_crud = db_manager.token_crud
 
     try:
@@ -25,5 +25,5 @@ async def get_current_user(
     except KeyError:
         raise exceptions.InvalidCredentials
 
-    user = await user_crud.get_existing_user(user_id=user_id)
+    user = await check_record_existence(db, User, user_id)
     return user

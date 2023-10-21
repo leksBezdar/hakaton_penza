@@ -8,6 +8,7 @@ from src.auth.models import User
 from src.user.dao import ReviewDAO
 from src.user.models import Review
 
+from ..utils import check_record_existence
 from ..auth.dao import UserDAO
 from ..auth.service import DatabaseManager as AuthManager
 from ..films.service import DatabaseManager as FilmManager
@@ -17,59 +18,67 @@ from . import schemas
 
 
 class UserFilmCRUD:
+       
+    LIST_TYPES = {
+            "favorite": "favorite_films",
+            "postponed": "postponed_films",
+            "abandoned": "abandoned_films",
+            "finished": "finished_films",
+            "current": "current_films",
+        }
+    
 
     def __init__(self, db: AsyncSession):
         self.db = db
 
+
     async def update_user_list(self, token: str, film_id: int, list_type: str):
 
-        LIST_TYPES = {
-            "favorite": "favorite_films",
-            "postponed": "postponed_films",
-            "abondoned": "abondoned_films",
-            "finished": "finished_films",
-            "current": "current_films",
-        }
+        user, user_list_attribute = await self._get_user_and_list_attribute(token, list_type)
+        film = await check_record_existence(db=self.db, model=Film, record_id=film_id)
 
-        auth_manager = AuthManager(self.db)
-        film_manager = FilmManager(self.db)
-        user_crud = auth_manager.user_crud
-        film_crud = film_manager.film_crud
-                
-        user = await user_crud.get_user_by_access_token(access_token=token)
-        film = await film_crud.get_film(film_id=film_id)
-        
-        if not film:
-            return {"Message": "Film was not found"}
-
-        if list_type in LIST_TYPES:
-            user_list_attribute = LIST_TYPES[list_type]
-        else:
+        if not user_list_attribute:
             return {"Message": "Invalid list type"}
-
-        user_list = getattr(user, user_list_attribute, [])
-        user_update_data = {user_list_attribute: user_list}
-            
-        if film_id not in user_list:
-
-            user_list.append({"id": film_id, "title": film.title, "poster": film.poster, "rating": film.average_rating})
-            user_update = await UserDAO.update(self.db, User.id == user.id, obj_in=user_update_data)
-            
-            self.db.add(user_update)
-            await self.db.commit()
-            await self.db.refresh(user_update)
-            
-            return f"Added to {list_type}"
         
+        action_message = await self._update_user_list(user, user_list_attribute, film)
+
+        return action_message
+    
+
+    async def _get_user_and_list_attribute(self, token, list_type):
+        
+        auth_manager = AuthManager(self.db)
+        user_crud = auth_manager.user_crud
+        
+        user = await user_crud.get_user_by_access_token(access_token=token)
+        user_list_attribute = self.LIST_TYPES.get(list_type)
+        
+        return user, user_list_attribute
+    
+
+    async def _update_user_list(self, user, user_list_attribute, film):
+        
+        user_list = getattr(user, user_list_attribute, [])
+        film_data = {"id": film.id, "title": film.title, "poster": film.poster, "rating": film.average_rating}
+
+        if film_data in user_list:
+            # Удаление фильма из списка
+            user_list.remove(film_data)
+            action_message = f"Deleted from {user_list_attribute}"
         else:
-            user_list.remove({"id": film_id, "title": film.title, "poster": film.poster, "rating": film.average_rating})
-            user_update = await UserDAO.update(self.db, User.id == user.id, obj_in=user_update_data)
-            
-            self.db.add(user_update)
-            await self.db.commit()
-            await self.db.refresh(user_update)
-            
-            return f"Deleted from {list_type}"
+            # Добавление фильма в список
+            user_list.append(film_data)
+            action_message = f"Added to {user_list_attribute}"
+
+        user_update_data = {user_list_attribute: user_list}
+        user_update = await UserDAO.update(self.db, User.id == user.id, obj_in=user_update_data)
+        
+        self.db.add(user_update)
+        await self.db.commit()
+        await self.db.refresh(user_update)
+
+        return action_message
+
         
 
 class ReviewCRUD:
@@ -112,16 +121,11 @@ class ReviewCRUD:
         return films
 
     async def update_review(self, review_id: int, review_in: schemas.ReviewUpdate):
-
-        obj_in = {}
-        for key, value in review_in.model_dump().items():
-            if value is not None:
-                obj_in[key] = value
-
+        
         review_update = await ReviewDAO.update(
             self.db,
             Review.id == review_id,
-            obj_in=obj_in)
+            obj_in=review_in)
 
         await self.db.commit()
 

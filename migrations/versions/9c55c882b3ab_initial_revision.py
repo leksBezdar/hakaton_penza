@@ -28,7 +28,7 @@ def upgrade() -> None:
         sa.Column('is_superuser', sa.Boolean(), nullable=False, server_default=sa.text('false')),
         sa.Column('hashed_password', sa.String(), nullable=False),
         sa.Column('postponed_films', ARRAY(sa.JSON(), dimensions=2), nullable=False),
-        sa.Column('abondoned_films', ARRAY(sa.JSON(), dimensions=2), nullable=False),
+        sa.Column('abandoned_films', ARRAY(sa.JSON(), dimensions=2), nullable=False),
         sa.Column('current_films', ARRAY(sa.JSON(), dimensions=2), nullable=False),
         sa.Column('finished_films', ARRAY(sa.JSON(), dimensions=2), nullable=False),
         sa.Column('favorite_films', ARRAY(sa.JSON(), dimensions=2), nullable=False),
@@ -96,6 +96,7 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_refresh_tokens_id'), table_name='refresh_tokens')
     op.drop_table('refresh_tokens')
     op.drop_index(op.f('ix_users_id'), table_name='users')
+    op.drop_table('reviews')
     op.drop_table('users')
     op.drop_table('films')
     # ### end Alembic commands ###

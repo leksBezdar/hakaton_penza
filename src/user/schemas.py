@@ -23,9 +23,8 @@ class ReviewRead(ReviewBase):
     id: int
 
 # Схема для обновления записи (CRUD - Update)
-class ReviewUpdate(ReviewBase):
+class ReviewUpdate(BaseModel):
     title: Optional[str] = None
-    user_id: Optional[str] = None
     film_id: Optional[int] = None
     message: Optional[str] = None
     rating: Optional[float] = None

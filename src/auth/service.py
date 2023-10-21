@@ -188,7 +188,7 @@ class TokenCrud:
         encoded_jwt = jwt.encode(
             to_encode, TOKEN_SECRET_KEY, algorithm=ALGORITHM)
 
-        return f"Bearer {encoded_jwt}"
+        return encoded_jwt
 
     # Создание refresh токена
 
@@ -216,7 +216,7 @@ class TokenCrud:
         await self.db.commit()
         await self.db.refresh(db_token)
 
-        return schemas.Token(access_token=access_token, refresh_token=refresh_token, token_type="Bearer")
+        return schemas.Token(access_token=access_token, refresh_token=refresh_token)
 
     async def get_access_token_payload(db: AsyncSession, access_token: str):
         try:

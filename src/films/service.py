@@ -47,7 +47,7 @@ class FilmCRUD:
 
         return db_film
 
-    async def get_film(self, film_title: str = None, film_id: int = None) -> Optional[Film]:
+    async def get_film(self, film_id: int = None) -> Optional[Film]:
         """
         Получает информацию о фильме по его названию или идентификатору.
 
@@ -59,9 +59,7 @@ class FilmCRUD:
             Optional[Film]: Запись о фильме, если найдена, в противном случае None.
 
         """
-        film = await FilmDAO.find_one_or_none(self.db, or_(
-            Film.title == film_title,
-            Film.id == film_id))
+        film = await FilmDAO.find_one_or_none(self.db, Film.id == film_id)
 
         return film
 
@@ -96,17 +94,10 @@ class FilmCRUD:
 
         """
 
-        obj_in = {}
-        for key, value in film_in.model_dump().items():
-            if value is not None:
-                obj_in[key] = value
-
-        print(obj_in)
-
         film_update = await FilmDAO.update(
             self.db,
             Film.id == film_id,
-            obj_in=obj_in)
+            obj_in=film_in)
 
         await self.db.commit()
 

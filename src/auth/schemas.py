@@ -15,7 +15,7 @@ class UserBase(BaseModel):
     username: str
     is_superuser: bool = Field(False)
     postponed_films: Optional[List] = []
-    abondoned_films: Optional[List] = []
+    abandoned_films: Optional[List] = []
     current_films: Optional[List] = []
     favorite_films: Optional[List] = []
     finished_films: Optional[List] = []
