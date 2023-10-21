@@ -15,6 +15,7 @@ from ..films.service import DatabaseManager as FilmManager
 from ..films.models import Film
 
 from . import schemas
+from . import exceptions
 
 
 class UserFilmCRUD:
@@ -38,14 +39,14 @@ class UserFilmCRUD:
         film = await check_record_existence(db=self.db, model=Film, record_id=film_id)
 
         if not user_list_attribute:
-            return {"Message": "Invalid list type"}
+            raise exceptions.InvalidListType
         
         action_message = await self._update_user_list(user, user_list_attribute, film)
 
         return action_message
     
 
-    async def _get_user_and_list_attribute(self, token, list_type):
+    async def _get_user_and_list_attribute(self, token: str, list_type: str):
         
         auth_manager = AuthManager(self.db)
         user_crud = auth_manager.user_crud
@@ -56,7 +57,7 @@ class UserFilmCRUD:
         return user, user_list_attribute
     
 
-    async def _update_user_list(self, user, user_list_attribute, film):
+    async def _update_user_list(self, user: User, user_list_attribute: str, film: Film):
         
         user_list = getattr(user, user_list_attribute, [])
         film_data = {"id": film.id, "title": film.title, "poster": film.poster, "rating": film.average_rating}
@@ -97,7 +98,7 @@ class ReviewCRUD:
                 
         film = await film_crud.get_film(film_id=review.film_id)
         if not film: 
-            return {"Message": "No film found"}
+            raise exceptions.FilmWasNotFound
 
         db_review = await ReviewDAO.add(
             self.db,
@@ -138,8 +139,6 @@ class ReviewCRUD:
             review_title == Review.title))
 
         await self.db.commit()
-
-
 
 
 

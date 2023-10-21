@@ -16,4 +16,4 @@ RUN alembic upgrade head
 
 # WORKDIR src
 
-CMD gunicorn src.main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8000 --forwarded-allow-ips=192.168.0.121 --forwarded-allow-ips=127.0.0.1
+CMD gunicorn src.main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker
