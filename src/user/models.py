@@ -18,3 +18,14 @@ class Review(Base):
     rating: Mapped[float] = mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True),
                                                  server_default=func.now())
+    
+    
+class Comment(Base):
+    __tablename__ = "comments"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    message: Mapped[str] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True),
+                                                 server_default=func.now())
+    replies: Mapped[list] = mapped_column(ARRAY(JSON), nullable=True, default=[])

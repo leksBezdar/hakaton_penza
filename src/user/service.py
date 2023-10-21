@@ -5,8 +5,8 @@ from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.models import User
-from src.user.dao import ReviewDAO
-from src.user.models import Review
+from src.user.dao import CommentDAO, ReviewDAO
+from src.user.models import Comment, Review
 
 from ..utils import check_record_existence
 from ..auth.dao import UserDAO
@@ -118,9 +118,9 @@ class ReviewCRUD:
 
     async def get_all_reviews(self, *filter, offset: int = 0, limit: int = 100, **filter_by) -> list[Review]:
 
-        films = await ReviewDAO.find_all(self.db, *filter, offset=offset, limit=limit, **filter_by)
+        reviews = await ReviewDAO.find_all(self.db, *filter, offset=offset, limit=limit, **filter_by)
 
-        return films
+        return reviews
 
     async def update_review(self, review_id: int, review_in: schemas.ReviewUpdate):
         
@@ -143,6 +143,65 @@ class ReviewCRUD:
 
 
 
+class CommentCRUD:
+    
+    def __init__(self, db: AsyncSession):
+        self.db = db 
+        
+    async def create_comment(self, token: str, comment: schemas.CommentCreate):
+
+        auth_manager = AuthManager(self.db)
+        film_manager = FilmManager(self.db)
+        user_crud = auth_manager.user_crud
+        film_crud = film_manager.film_crud
+        
+        user = await user_crud.get_user_by_access_token(access_token=token)
+                
+        film = await film_crud.get_film(film_id=comment.film_id)
+        if not film: 
+            raise exceptions.FilmWasNotFound
+
+        db_comment = await CommentDAO.add(
+            self.db,
+            schemas.CommentCreateDB(
+                user_id=user.id,
+                **comment.model_dump(),
+            )
+        )
+
+        self.db.add(db_comment)
+        await self.db.commit()
+        await self.db.refresh(db_comment)
+
+        return db_comment
+    
+
+    async def get_all_comments(self, *filter, offset: int = 0, limit: int = 100, **filter_by) -> list[Comment]:
+
+        comments = await ReviewDAO.find_all(self.db, *filter, offset=offset, limit=limit, **filter_by)
+
+        return comments
+
+    async def update_comment(self, comment_id: int, comment_in: schemas.CommentUpdate):
+        
+        comment_update = await CommentDAO.update(
+            self.db,
+            Comment.id == comment_id,
+            obj_in=comment_in)
+
+        await self.db.commit()
+
+        return comment_update
+
+    async def delete_comment(self, comment_title: str = None, comment_id: int = None) -> None:
+
+        await ReviewDAO.delete(self.db, or_(
+            comment_id == Comment.id,
+            comment_title == Comment.title))
+
+        await self.db.commit()
+        
+
 class DatabaseManager:
     """
     Класс для управления всеми CRUD-классами и применения изменений к базе данных.
@@ -156,6 +215,7 @@ class DatabaseManager:
         self.db = db
         self.user_film_crud = UserFilmCRUD(db)
         self.review_crud = ReviewCRUD(db)
+        self.comment_crud = CommentCRUD(db)
 
     async def commit(self):
         await self.db.commit()

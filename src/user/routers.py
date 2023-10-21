@@ -47,6 +47,7 @@ async def create_review(
 
 @router.get("/get_all_reviews")
 async def get_all_reviews(
+    film_id: int,
     offset: int = 0,
     limit: int = 10,
     db: AsyncSession = Depends(get_async_session),
@@ -54,7 +55,7 @@ async def get_all_reviews(
     db_manager = DatabaseManager(db)
     review_crud = db_manager.review_crud
 
-    return await review_crud.get_all_reviews(offset=offset, limit=limit)
+    return await review_crud.get_all_reviews(film_id=film_id, offset=offset, limit=limit)
 
 
 @router.patch("/update_review", response_model=schemas.ReviewUpdate)

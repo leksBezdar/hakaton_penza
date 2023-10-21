@@ -23,6 +23,7 @@ class FilmBase(BaseModel):
     box_office_world: str
     premiere_russia: Optional[str]
     premiere_world: str
+    average_rating: float
 
     age_rating: constr(
         pattern=age_rating_pattern
