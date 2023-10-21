@@ -1,10 +1,10 @@
+from typing import List, Optional
+
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from typing import List, Optional
 
 from .config import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
 

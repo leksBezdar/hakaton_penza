@@ -1,4 +1,3 @@
-import uuid
 import jwt
 
 from typing import Optional
@@ -7,8 +6,8 @@ from uuid import uuid4
 from datetime import datetime, timedelta, timezone
 
 from fastapi import Request
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import or_, update
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from . import models, exceptions, schemas, utils
 
@@ -193,7 +192,7 @@ class TokenCrud:
     # Создание refresh токена
 
     async def create_refresh_token(self) -> str:
-        return str(uuid.uuid4())
+        return str(uuid4())
 
     # Создание access и refresh токенов для пользователя
     async def create_tokens(self, user_id: str):

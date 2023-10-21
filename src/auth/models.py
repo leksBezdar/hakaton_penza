@@ -1,12 +1,11 @@
 from datetime import datetime
-
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-from sqlalchemy import TIMESTAMP, Integer, Boolean, ForeignKey, JSON, String, Text
-from sqlalchemy.dialects.postgresql import ARRAY
 from typing import Annotated, Any
+
+from sqlalchemy import TIMESTAMP, Integer, Boolean, ForeignKey, JSON, String, Text
+from sqlalchemy.orm import  Mapped, mapped_column, relationship
+from sqlalchemy.sql import func
+from sqlalchemy.dialects.postgresql import ARRAY
+
 
 from ..films.models import Film
 from ..database import Base

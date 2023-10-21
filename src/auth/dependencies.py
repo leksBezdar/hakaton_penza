@@ -1,13 +1,13 @@
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..utils import check_record_existence
-from .utils import OAuth2PasswordBearerWithCookie
-
 from . import exceptions
-from .models import User
-from ..database import get_async_session
+from .utils import OAuth2PasswordBearerWithCookie
 from .service import DatabaseManager
+from .models import User
+
+from ..database import get_async_session
+from ..utils import check_record_existence
 
 
 

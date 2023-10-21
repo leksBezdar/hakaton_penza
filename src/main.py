@@ -1,9 +1,10 @@
 import uvicorn
+
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from src.auth.routers import router as auth_router
 from fastapi.middleware.cors import CORSMiddleware
 
+from src.auth.routers import router as auth_router
 from src.films.routers import router as films_router
 from src.user.routers import router as user_router
 

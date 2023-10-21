@@ -1,17 +1,17 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from typing import Optional
+from ..user.models import Review
+from ..films.models import Film
 
-from src.user.models import Review
+from ..database import get_async_session
 
 from . import schemas
-
-from ..films.models import Film
 from .service import DatabaseManager
-from ..database import get_async_session
 
 
 router = APIRouter()

@@ -1,10 +1,8 @@
 from datetime import datetime
 
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
 from sqlalchemy import ARRAY, TIMESTAMP, Float, Integer, Boolean, ForeignKey, JSON, String
+from sqlalchemy.orm import Mapped, relationship, mapped_column
+from sqlalchemy.sql import func
 
 from ..database import Base
 

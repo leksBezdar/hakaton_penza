@@ -1,7 +1,9 @@
-from dotenv import load_dotenv
 import os
 
+from dotenv import load_dotenv
+
 load_dotenv()
+
 
 TOKEN_SECRET_KEY = os.environ.get("TOKEN_SECRET_KEY")
 ALGORITHM = os.environ.get("ALGORITHM")
