@@ -20,6 +20,7 @@ class User(Base):
     username: Mapped[str] = mapped_column(nullable=False, unique=True)
     is_superuser: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     hashed_password: Mapped[str] = mapped_column(nullable=False)
+    planned_films: Mapped[user_list]
     postponed_films: Mapped[user_list]
     abandoned_films: Mapped[user_list]
     current_films: Mapped[user_list]

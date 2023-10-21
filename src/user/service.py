@@ -24,6 +24,7 @@ class UserFilmCRUD:
             "favorite": "favorite_films",
             "postponed": "postponed_films",
             "abandoned": "abandoned_films",
+            "planned": "planned_films",
             "finished": "finished_films",
             "current": "current_films",
         }

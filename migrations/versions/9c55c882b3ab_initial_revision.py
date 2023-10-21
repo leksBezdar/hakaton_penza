@@ -28,6 +28,7 @@ def upgrade() -> None:
         sa.Column('is_superuser', sa.Boolean(), nullable=False, server_default=sa.text('false')),
         sa.Column('hashed_password', sa.String(), nullable=False),
         sa.Column('postponed_films', ARRAY(sa.JSON(), dimensions=2), nullable=False),
+        sa.Column('planned_films', ARRAY(sa.JSON(), dimensions=2), nullable=False),
         sa.Column('abandoned_films', ARRAY(sa.JSON(), dimensions=2), nullable=False),
         sa.Column('current_films', ARRAY(sa.JSON(), dimensions=2), nullable=False),
         sa.Column('finished_films', ARRAY(sa.JSON(), dimensions=2), nullable=False),

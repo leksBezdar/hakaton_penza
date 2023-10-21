@@ -53,7 +53,7 @@ async def login(
     response.set_cookie(
         'access_token',
         token.access_token,
-        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60 * 24,
         httponly=True
     )
     response.set_cookie(
