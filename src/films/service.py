@@ -1,20 +1,19 @@
 from typing import Optional
-import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import or_
-from src.films import exceptions
-
-from src.utils import check_record_existence
-
-from .dao import FilmDAO
-from .models import Film
 
 from ..auth.models import User
 from ..auth.dao import UserDAO
 from ..auth.service import DatabaseManager as AuthManager
 
+from ..utils import check_record_existence
+
+from .dao import FilmDAO
+from .models import Film
+
 from . import schemas
+from . import exceptions
 
 
 class FilmCRUD:

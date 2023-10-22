@@ -1,7 +1,5 @@
-from datetime import datetime
-
-from pydantic import BaseModel, constr
-from typing import List, Optional
+from pydantic import BaseModel
+from typing import Optional
 
     
 # Базовая схема для Comment    

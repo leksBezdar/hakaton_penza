@@ -1,7 +1,3 @@
-from typing import Optional
-from fastapi import Request
-
-from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .dao import CommentDAO
@@ -9,11 +5,9 @@ from .models import Comment
 
 from ..utils import check_record_existence
 from ..auth.service import DatabaseManager as AuthManager
-from ..films.service import DatabaseManager as FilmManager
 from ..films.models import Film
 
 from . import schemas
-from . import exceptions
 
 
 class CommentCRUD:

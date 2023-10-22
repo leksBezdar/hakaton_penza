@@ -1,6 +1,3 @@
-from typing import Optional
-from fastapi import Request
-
 from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,10 +8,8 @@ from .dao import ReviewDAO
 from .models import Review
 
 from ..utils import check_record_existence
-from ..auth.dao import UserDAO
 from ..auth.service import DatabaseManager as AuthManager
 from ..films.service import DatabaseManager as FilmManager
-from ..auth.models import User
 
 
 

@@ -3,12 +3,11 @@ from fastapi.responses import JSONResponse
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from typing import Optional
-
 from . import schemas
 
 from .models import Film
 from .service import DatabaseManager
+
 from ..database import get_async_session
 
 
