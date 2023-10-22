@@ -3,9 +3,16 @@ import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import or_
+from src.films import exceptions
+
+from src.utils import check_record_existence
 
 from .dao import FilmDAO
 from .models import Film
+
+from ..auth.models import User
+from ..auth.dao import UserDAO
+from ..auth.service import DatabaseManager as AuthManager
 
 from . import schemas
 
@@ -117,6 +124,70 @@ class FilmCRUD:
             film_title == Film.title))
 
         await self.db.commit()
+        
+
+class UserFilmCRUD:
+       
+    LIST_TYPES = {
+            "favorite": "favorite_films",
+            "postponed": "postponed_films",
+            "abandoned": "abandoned_films",
+            "planned": "planned_films",
+            "finished": "finished_films",
+            "current": "current_films",
+        }
+    
+
+    def __init__(self, db: AsyncSession):
+        self.db = db
+
+
+    async def update_user_list(self, token: str, film_id: int, list_type: str):
+
+        user, user_list_attribute = await self._get_user_and_list_attribute(token, list_type)
+        film = await check_record_existence(db=self.db, model=Film, record_id=film_id)
+
+        if not user_list_attribute:
+            raise exceptions.InvalidListType
+        
+        action_message = await self._update_user_list(user, user_list_attribute, film)
+
+        return action_message
+    
+
+    async def _get_user_and_list_attribute(self, token: str, list_type: str):
+        
+        auth_manager = AuthManager(self.db)
+        user_crud = auth_manager.user_crud
+        
+        user = await user_crud.get_user_by_access_token(access_token=token)
+        user_list_attribute = self.LIST_TYPES.get(list_type)
+        
+        return user, user_list_attribute
+    
+
+    async def _update_user_list(self, user: User, user_list_attribute: str, film: Film):
+        
+        user_list = getattr(user, user_list_attribute, [])
+        film_data = {"id": film.id, "title": film.title, "poster": film.poster, "rating": film.average_rating}
+
+        if film_data in user_list:
+            # Удаление фильма из списка
+            user_list.remove(film_data)
+            action_message = f"Deleted from {user_list_attribute}"
+        else:
+            # Добавление фильма в список
+            user_list.append(film_data)
+            action_message = f"Added to {user_list_attribute}"
+
+        user_update_data = {user_list_attribute: user_list}
+        user_update = await UserDAO.update(self.db, User.id == user.id, obj_in=user_update_data)
+        
+        self.db.add(user_update)
+        await self.db.commit()
+        await self.db.refresh(user_update)
+
+        return action_message
 
 
 class DatabaseManager:
@@ -131,6 +202,7 @@ class DatabaseManager:
     def __init__(self, db: AsyncSession):
         self.db = db
         self.film_crud = FilmCRUD(db)
+        self.user_film_crud = UserFilmCRUD(db)
 
     async def commit(self):
         await self.db.commit()

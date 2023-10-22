@@ -95,6 +95,7 @@ def upgrade() -> None:
     op.create_table('comments',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('user_id', sa.String(), nullable=False),
+        sa.Column('film_id', sa.Integer(), nullable=False),
         sa.Column('username', sa.String(), nullable=False),
         sa.Column('message', sa.String(), nullable=False),
         sa.Column('parent_comment_id', sa.Integer(), nullable=True),
@@ -102,6 +103,7 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['parent_comment_id'], ['comments.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['username'], ['users.username'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['film_id'], ['films.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
 

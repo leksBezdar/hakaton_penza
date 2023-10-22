@@ -21,15 +21,3 @@ class Review(Base):
     dislikes: Mapped[int] = mapped_column(nullable=False, default=0)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True),
                                                  server_default=func.now())
-    
-    
-class Comment(Base):
-    __tablename__ = "comments"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
-    username: Mapped[str] = mapped_column(ForeignKey("users.username", ondelete="CASCADE"))
-    message: Mapped[str] = mapped_column(nullable=False)
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True),
-                                                 server_default=func.now())
-    parent_comment_id: Mapped[int] = mapped_column(ForeignKey("comments.id"))

@@ -6,17 +6,18 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.auth.routers import router as auth_router
 from src.films.routers import router as films_router
-from src.user.routers import router as user_router
+from src.reviews.routers import router as reviews_router
+from src.comments.routers import router as comments_router
 
 
 app = FastAPI(
-    title='movieRank',
-    debug=True
+    title='movieRank'
 )
 
 app.include_router(auth_router, tags=["Registration"])
 app.include_router(films_router, tags=["Films"])
-app.include_router(user_router, tags=["User actions"])
+app.include_router(reviews_router, tags=["Reviews"])
+app.include_router(comments_router, tags=["Comments"])
 
 
 origins = [
