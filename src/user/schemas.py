@@ -10,6 +10,8 @@ class ReviewBase(BaseModel):
     film_id: int
     message: str
     rating: float
+    likes: int = 0
+    dislikes: int = 0
 
 
 # Схема для создания записи (CRUD - Create)
@@ -30,6 +32,8 @@ class ReviewUpdate(BaseModel):
     title: Optional[str] = None
     message: Optional[str] = None
     rating: Optional[float] = None
+    likes: Optional[int] = None
+    dislikes: Optional[int] = None
     
     
 # Базовая схема для Comment    
