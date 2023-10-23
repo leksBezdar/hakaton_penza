@@ -128,7 +128,6 @@ class FilmCRUD:
 class UserFilmCRUD:
        
     LIST_TYPES = {
-            "favorite": "favorite_films",
             "postponed": "postponed_films",
             "abandoned": "abandoned_films",
             "planned": "planned_films",
@@ -137,7 +136,7 @@ class UserFilmCRUD:
     
 
     def __init__(self, db: AsyncSession):
-        self.db = db
+        self.db = db 
 
 
     async def update_user_list(self, token: str, film_id: int, list_type: str):
@@ -166,9 +165,17 @@ class UserFilmCRUD:
 
     async def _update_user_list(self, user: User, user_list_attribute: str, film: Film):
         
-        user_list = getattr(user, user_list_attribute, [])
         film_data = {"id": film.id, "title": film.title, "poster": film.poster, "rating": film.average_rating}
 
+        # Получаем текущий список пользователя, который пользователь хочет обновить
+        user_list = getattr(user, user_list_attribute, [])
+        
+        delete_message = await self._check_other_user_lists(
+            film_data=film_data,
+            user=user,
+            user_list_attribute=user_list_attribute
+        )
+    
         if film_data in user_list:
             # Удаление фильма из списка
             user_list.remove(film_data)
@@ -185,8 +192,32 @@ class UserFilmCRUD:
         await self.db.commit()
         await self.db.refresh(user_update)
 
-        return action_message
+        return f"{action_message} and {delete_message}"
+    
+    
+    async def _check_other_user_lists(self, film_data: dict, user: User, user_list_attribute: str):
+        
+        # Проверка, что film_id не находится в других списках
+        other_list_attributes = [key for key in self.LIST_TYPES.values() if key != user_list_attribute]
+        
+        for other_list_attribute in other_list_attributes:
+            
+            other_list = getattr(user, other_list_attribute, [])
+            
+            if film_data in other_list:
+                
+                # Если film_id найден в другом списке, удаляем его оттуда
+                other_list.remove(film_data)
+                
+                user_update_data = {other_list_attribute: other_list}
+                user_update = await UserDAO.update(self.db, User.id == user.id, obj_in=user_update_data)
 
+                self.db.add(user_update)
+                await self.db.commit()
+                await self.db.refresh(user_update)
+                
+                return f"deleted from {other_list_attribute}"
+        
 
 class DatabaseManager:
     """
