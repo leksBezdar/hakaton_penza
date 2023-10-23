@@ -30,7 +30,6 @@ def upgrade() -> None:
         sa.Column('postponed_films', ARRAY(sa.JSON(), dimensions=2), nullable=False),
         sa.Column('planned_films', ARRAY(sa.JSON(), dimensions=2), nullable=False),
         sa.Column('abandoned_films', ARRAY(sa.JSON(), dimensions=2), nullable=False),
-        sa.Column('current_films', ARRAY(sa.JSON(), dimensions=2), nullable=False),
         sa.Column('finished_films', ARRAY(sa.JSON(), dimensions=2), nullable=False),
         sa.Column('favorite_films', ARRAY(sa.JSON(), dimensions=2), nullable=False),
     sa.PrimaryKeyConstraint('id'),

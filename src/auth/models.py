@@ -23,7 +23,6 @@ class User(Base):
     planned_films: Mapped[user_list]
     postponed_films: Mapped[user_list]
     abandoned_films: Mapped[user_list]
-    current_films: Mapped[user_list]
     favorite_films: Mapped[user_list]
     finished_films: Mapped[user_list]
 

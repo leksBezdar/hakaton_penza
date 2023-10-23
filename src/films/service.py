@@ -133,7 +133,6 @@ class UserFilmCRUD:
             "abandoned": "abandoned_films",
             "planned": "planned_films",
             "finished": "finished_films",
-            "current": "current_films",
         }
     
 
