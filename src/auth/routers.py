@@ -50,19 +50,6 @@ async def login(
 
     token = await token_crud.create_tokens(user_id=user.id)
 
-    response.set_cookie(
-        'access_token',
-        token.access_token,
-        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60 * 24,
-        httponly=True
-    )
-    response.set_cookie(
-        'refresh_token',
-        token.refresh_token,
-        max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
-        httponly=True
-    )
-
     return token
 
 
