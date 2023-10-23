@@ -8,6 +8,7 @@ from src.auth.routers import router as auth_router
 from src.films.routers import router as films_router
 from src.reviews.routers import router as reviews_router
 from src.comments.routers import router as comments_router
+from src.ai_chat.routers import router as ai_chat_router
 
 
 app = FastAPI(
@@ -18,6 +19,7 @@ app.include_router(auth_router, tags=["Registration"])
 app.include_router(films_router, tags=["Films"])
 app.include_router(reviews_router, tags=["Reviews"])
 app.include_router(comments_router, tags=["Comments"])
+app.include_router(ai_chat_router, tags=["AI_router"])
 
 
 origins = [
