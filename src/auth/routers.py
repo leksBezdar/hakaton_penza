@@ -39,6 +39,7 @@ async def login(
     response: Response,
     username: str,
     password: str,
+    isDev: bool = None,
     db: AsyncSession = Depends(get_async_session),
 ):
 
@@ -49,6 +50,20 @@ async def login(
     user = await user_crud.authenticate_user(username=username, password=password)
 
     token = await token_crud.create_tokens(user_id=user.id)
+    
+    if isDev:
+        response.set_cookie(
+            'access_token',
+            token.access_token,
+            max_age=ACCESS_TOKEN_EXPIRE_MINUTES,
+            httponly=True
+        )
+        response.set_cookie(
+            'refresh_token',
+            token.refresh_token,
+            max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+            httponly=True
+        )
 
     return token
 
@@ -93,6 +108,7 @@ async def get_me(
 # Получение информации о пользователе по имени пользователя
 @router.get("/get_user", response_model=None)
 async def get_user(
+    token: str = None,
     username: str = None,
     email: str = None,
     user_id: str = None,
@@ -102,7 +118,7 @@ async def get_user(
     db_manager = DatabaseManager(db)
     user_crud = db_manager.user_crud
 
-    user = await user_crud.get_existing_user(username=username, email=email, user_id=user_id)
+    user = await user_crud.get_existing_user(token=token, username=username, email=email, user_id=user_id)
 
     return user
 

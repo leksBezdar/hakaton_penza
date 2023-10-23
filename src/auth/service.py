@@ -82,15 +82,20 @@ class UserCRUD:
 
     # Проверка наличия пользователя с заданной электронной почтой, именем пользователя или ID
 
-    async def get_existing_user(self, email: str = None, username: str = None, user_id: str = None) -> User:
+    async def get_existing_user(self, email: str = None, username: str = None, user_id: str = None, token: str = None) -> User:
 
-        if not email and not username and not user_id:
+        if not email and not username and not user_id and not token:
             raise exceptions.NoUserData
+        
+        if token:
+            user_id = await TokenCrud.get_access_token_payload(db=self.db, access_token=token)
 
         user = await UserDAO.find_one_or_none(self.db, or_(
             User.email == email,
             User.username == username,
             User.id == user_id))
+        
+            
 
         return user
 
