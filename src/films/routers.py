@@ -26,13 +26,14 @@ async def create_film(
 
 @router.get("/get_film/", response_model=schemas.FilmRead)
 async def get_film(
+    token: str = None,
     film_id: int = None,
     db: AsyncSession = Depends(get_async_session),
 ) -> Film:
     db_manager = DatabaseManager(db)
     film_crud = db_manager.film_crud
 
-    return await film_crud.get_film(film_id=film_id)
+    return await film_crud.get_film(token=token, film_id=film_id)
 
 
 @router.get("/get_all_films")

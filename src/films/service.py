@@ -53,7 +53,7 @@ class FilmCRUD:
 
         return db_film
 
-    async def get_film(self, film_id: int = None) -> Optional[Film]:
+    async def get_film(self, film_id: int = None, token: str = None) -> Optional[Film]:
         """
         Получает информацию о фильме по его названию или идентификатору.
 
@@ -165,7 +165,7 @@ class UserFilmCRUD:
 
     async def _update_user_list(self, user: User, user_list_attribute: str, film: Film):
         
-        film_data = {"id": film.id, "title": film.title, "poster": film.poster, "rating": film.average_rating}
+        film_data = {"id": film.id, "title": film.title, "poster": film.poster, "rating": film.average_rating, "genres": film.genres}
 
         # Получаем текущий список пользователя, который пользователь хочет обновить
         user_list = getattr(user, user_list_attribute, [])
