@@ -31,7 +31,11 @@ class FilmBase(BaseModel):
 
 # Схема для создания записи (CRUD - Create)
 class FilmCreate(FilmBase):
-    pass
+    is_planned: bool  = False
+    is_abandoned: bool  = False
+    is_favorite: bool  = False
+    is_postponed: bool  = False
+    is_finished: bool  = False
 
 # Схема для чтения (CRUD - Read)
 class FilmRead(FilmBase):

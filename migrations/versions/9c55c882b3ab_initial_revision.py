@@ -71,6 +71,11 @@ def upgrade() -> None:
         sa.Column('premiere_world', sa.String(), nullable=False),
         sa.Column('age_rating', sa.String(), nullable=False),
         sa.Column('average_rating', sa.Float(), nullable=True),
+        sa.Column('is_planned', sa.Boolean(), server_default="False"),
+        sa.Column('is_abandoned', sa.Boolean(), server_default="False"),
+        sa.Column('is_favorite', sa.Boolean(), server_default="False"),
+        sa.Column('is_postponed', sa.Boolean(), server_default="False"),
+        sa.Column('is_finished', sa.Boolean(), server_default="False"),
         sa.PrimaryKeyConstraint('id')
     )
     

@@ -25,6 +25,11 @@ class Film(Base):
     box_office_world: Mapped[str] = mapped_column(nullable=False)
     premiere_russia: Mapped[str] = mapped_column(nullable=True)
     premiere_world: Mapped[str] = mapped_column(nullable=False)
-    age_rating: Mapped[str] = mapped_column(nullable=False)
+    age_rating: Mapped[str] = mapped_column(nullable=False, default=False)
+    is_planned: Mapped[bool] = mapped_column(nullable=False, default=False)
+    is_abandoned: Mapped[bool] = mapped_column(nullable=False, default=False)
+    is_favorite: Mapped[bool] = mapped_column(nullable=False, default=False)
+    is_postponed: Mapped[bool] = mapped_column(nullable=False, default=False)
+    is_finished: Mapped[bool] = mapped_column(nullable=False, default=False)
 
     average_rating: Mapped[float] = mapped_column(nullable=True)
