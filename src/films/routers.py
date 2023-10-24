@@ -76,6 +76,18 @@ async def update_user_list(
     return await user_film_crud.update_user_list(
       token=token, film_id=film_id, list_type=list_type)
 
+@router.patch("/add_to_favorite")
+async def add_to_favorite(
+    token: str,
+    film_id: int,
+    db: AsyncSession = Depends(get_async_session),
+):
+    db_manager = DatabaseManager(db)
+    user_film_crud = db_manager.user_film_crud
+
+    return await user_film_crud.add_to_favorite(
+      token=token, film_id=film_id)
+
 
 @router.delete("/delete_film")
 async def delete_film(

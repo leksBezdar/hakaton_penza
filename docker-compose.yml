@@ -10,3 +10,10 @@ services:
     command: gunicorn src.main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker
     ports:
       - 9999:8000
+    
+  nginx:
+    image: nginx:latest
+    ports:
+      - 80:80
+    volumes:
+      - "./docker/nginx/conf.d:/etc/nginx/conf.d"

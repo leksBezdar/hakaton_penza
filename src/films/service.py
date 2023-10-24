@@ -217,7 +217,38 @@ class UserFilmCRUD:
                 await self.db.refresh(user_update)
                 
                 return f"deleted from {other_list_attribute}"
+    
+    async def add_to_favorite(self, token: str, film_id: int):
+
+        film = await check_record_existence(db=self.db, model=Film, record_id=film_id)
+
+        film_data = {"id": film.id, "title": film.title, "poster": film.poster, "rating": film.average_rating, "genres": film.genres}
+
+        auth_manager = AuthManager(self.db)
+        user_crud = auth_manager.user_crud
+
+        user = await user_crud.get_user_by_access_token(access_token=token)
+
+        user_list = getattr(user, "favorite_films", [])
+    
+        if film_data in user_list:
+            # Удаление фильма из списка
+            user_list.remove(film_data)
+            action_message = f"Deleted from favorite_films"
+        else:
+            # Добавление фильма в список
+            user_list.append(film_data)
+            action_message = f"Added to favorite_films"
+
+        user_update_data = {"favorite_films": user_list}
+        user_update = await UserDAO.update(self.db, User.id == user.id, obj_in=user_update_data)
         
+        self.db.add(user_update)
+        await self.db.commit()
+        await self.db.refresh(user_update)
+
+        return action_message
+     
 
 class DatabaseManager:
     """
