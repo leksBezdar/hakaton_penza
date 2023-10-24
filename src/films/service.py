@@ -5,7 +5,7 @@ from sqlalchemy import or_
 
 from ..auth.models import User
 from ..auth.dao import UserDAO
-from ..auth.service import DatabaseManager as AuthManager
+from ..auth.service import DatabaseManager as AuthManager, TokenCrud
 
 from ..utils import check_record_existence
 
@@ -128,6 +128,7 @@ class FilmCRUD:
 class UserFilmCRUD:
        
     LIST_TYPES = {
+            "favorite": "favorite_films",
             "postponed": "postponed_films",
             "abandoned": "abandoned_films",
             "planned": "planned_films",
@@ -139,67 +140,69 @@ class UserFilmCRUD:
         self.db = db 
 
 
-    async def update_user_list(self, token: str, film_id: int, list_type: str):
-
-        user, user_list_attribute = await self._get_user_and_list_attribute(token, list_type)
+    async def update_user_list(self, user_id: str, film_id: int, list_type: str):
+        
         film = await check_record_existence(db=self.db, model=Film, record_id=film_id)
-
+        user = await check_record_existence(self.db, User, user_id)
+        
+        user_list_attribute = self.LIST_TYPES.get(list_type)
+        
         if not user_list_attribute:
             raise exceptions.InvalidListType
         
-        action_message = await self._update_user_list(user, user_list_attribute, film)
+        return await self._update_user_list(user, user_list_attribute, film)
 
-        return action_message
     
-
-    async def _get_user_and_list_attribute(self, token: str, list_type: str):
-        
-        auth_manager = AuthManager(self.db)
-        user_crud = auth_manager.user_crud
-        
-        user = await user_crud.get_user_by_access_token(access_token=token)
-        user_list_attribute = self.LIST_TYPES.get(list_type)
-        
-        return user, user_list_attribute
-    
+    def _create_film_data(self, film: Film) -> dict:
+        return {
+            "id": film.id, "title": film.title, "poster": film.poster,
+            "rating": film.average_rating, "genres": film.genres
+        }
 
     async def _update_user_list(self, user: User, user_list_attribute: str, film: Film):
         
-        film_data = {"id": film.id, "title": film.title, "poster": film.poster, "rating": film.average_rating, "genres": film.genres}
-
-        # Получаем текущий список пользователя, который пользователь хочет обновить
-        user_list = getattr(user, user_list_attribute, [])
+        film_data = self._create_film_data(film=film)
         
-        delete_message = await self._check_other_user_lists(
-            film_data=film_data,
-            user=user,
-            user_list_attribute=user_list_attribute
-        )
-    
-        if film_data in user_list:
-            # Удаление фильма из списка
-            user_list.remove(film_data)
-            action_message = f"Deleted from {user_list_attribute}"
-        else:
-            # Добавление фильма в список
-            user_list.append(film_data)
-            action_message = f"Added to {user_list_attribute}"
+        # Получаем текущий список пользователя, который пользователь хочет обновить
+        target_user_list = getattr(user, user_list_attribute, [])
+        
+        if user_list_attribute != "favorite_films":
+            
+            await self._check_other_user_lists(
+                film_data=film_data,
+                user=user,
+                user_list_attribute=user_list_attribute
+            )
+        
+        await self._toggle_film_data_in_user_list(target_user_list=target_user_list, film=film)
 
-        user_update_data = {user_list_attribute: user_list}
+        user_update_data = {user_list_attribute: target_user_list}
         user_update = await UserDAO.update(self.db, User.id == user.id, obj_in=user_update_data)
         
         self.db.add(user_update)
         await self.db.commit()
         await self.db.refresh(user_update)
 
-        return f"{action_message} and {delete_message}"
+        return user
     
     
-    async def _check_other_user_lists(self, film_data: dict, user: User, user_list_attribute: str):
+    async def _toggle_film_data_in_user_list(self, target_user_list: list, film: Film):
         
-        # Проверка, что film_id не находится в других списках
-        other_list_attributes = [key for key in self.LIST_TYPES.values() if key != user_list_attribute]
-        
+        film_data = self._create_film_data(film=film)
+            
+        if film_data in target_user_list:
+            target_user_list.remove(film_data)
+            return "Deleted from target_list"
+        else:
+            target_user_list.append(film_data)
+            return f"Added to target_list"
+    
+    
+    async def _check_other_user_lists(self, film_data: dict, user: User, user_list_attribute: str):     
+                
+        # Проверка, что film_id не находится в других списках и не является записью в списке favorite_films
+        other_list_attributes = [key for key in self.LIST_TYPES.values()if key != user_list_attribute and key != "favorite_films"]
+ 
         for other_list_attribute in other_list_attributes:
             
             other_list = getattr(user, other_list_attribute, [])
@@ -217,37 +220,6 @@ class UserFilmCRUD:
                 await self.db.refresh(user_update)
                 
                 return f"deleted from {other_list_attribute}"
-    
-    async def add_to_favorite(self, token: str, film_id: int):
-
-        film = await check_record_existence(db=self.db, model=Film, record_id=film_id)
-
-        film_data = {"id": film.id, "title": film.title, "poster": film.poster, "rating": film.average_rating, "genres": film.genres}
-
-        auth_manager = AuthManager(self.db)
-        user_crud = auth_manager.user_crud
-
-        user = await user_crud.get_user_by_access_token(access_token=token)
-
-        user_list = getattr(user, "favorite_films", [])
-    
-        if film_data in user_list:
-            # Удаление фильма из списка
-            user_list.remove(film_data)
-            action_message = f"Deleted from favorite_films"
-        else:
-            # Добавление фильма в список
-            user_list.append(film_data)
-            action_message = f"Added to favorite_films"
-
-        user_update_data = {"favorite_films": user_list}
-        user_update = await UserDAO.update(self.db, User.id == user.id, obj_in=user_update_data)
-        
-        self.db.add(user_update)
-        await self.db.commit()
-        await self.db.refresh(user_update)
-
-        return action_message
      
 
 class DatabaseManager:
