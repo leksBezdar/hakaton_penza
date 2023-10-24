@@ -39,7 +39,7 @@ async def login(
     response: Response,
     username: str,
     password: str,
-    isDev: bool = None,
+    isDev: bool = False,
     db: AsyncSession = Depends(get_async_session),
 ):
 
