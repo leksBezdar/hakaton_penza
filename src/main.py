@@ -1,6 +1,6 @@
 import uvicorn
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -37,12 +37,11 @@ app.add_middleware(
 
 
 @app.get("/", response_class=HTMLResponse)
-def home():
-    return """
-    <a href="http://127.0.0.1:8000/docs"><h1>Documentation</h1></a><br>
-    <a href="http://127.0.0.1:8000/redoc"><h1>ReDoc</h1></a>
+def home(request: Request):
+    return f"""
+    <a href="{str(request.url)}docs"><h1>Documentation</h1></a><br>
+    <a href="{str(request.url)}redoc"><h1>ReDoc</h1></a>
     """
-
 
 if __name__ == '__main__':
     uvicorn.run("src.main:app", host="0.0.0.0", port=8000, reload=True)
