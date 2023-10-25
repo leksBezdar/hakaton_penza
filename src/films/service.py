@@ -181,10 +181,9 @@ class UserFilmCRUD:
         
         self.db.add(user_update)
         await self.db.commit()
-        await self.db.refresh(user_update)
+        await self.db.refresh(user_update)   
 
-        return user
-    
+        return {"Message": "Update was successful"}
     
     async def _toggle_film_data_in_user_list(self, target_user_list: list, film: Film):
         
