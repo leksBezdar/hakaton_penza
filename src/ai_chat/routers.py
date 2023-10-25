@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Response
+from fastapi import APIRouter
 
 from .service import AIManager
 
@@ -6,7 +6,7 @@ from .service import AIManager
 router = APIRouter()
 
 
-@router.get("/get_ai_avdvice")
+@router.post("/get_ai_avdvice")
 def get_ai_advice(prompt: dict):
 
     AIChat = AIManager()
