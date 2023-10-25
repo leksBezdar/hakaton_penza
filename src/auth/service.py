@@ -270,7 +270,7 @@ class TokenCrud:
         )
         await self.db.commit()
 
-        return schemas.Token(access_token=access_token, refresh_token=refresh_token, token_type="Bearer")
+        return schemas.Token(access_token=access_token, refresh_token=refresh_token)
 
 
 # Определение класса для управления всеми crud-классами
