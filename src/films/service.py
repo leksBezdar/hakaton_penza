@@ -126,21 +126,19 @@ class FilmCRUD:
         
 
 class UserFilmCRUD:
-       
-    LIST_TYPES = {
+    
+    def __init__(self, db: AsyncSession):
+        self.db = db 
+        self.LIST_TYPES = {
             "favorite": "favorite_films",
             "postponed": "postponed_films",
             "abandoned": "abandoned_films",
             "planned": "planned_films",
             "finished": "finished_films",
         }
-    
-
-    def __init__(self, db: AsyncSession):
-        self.db = db 
 
 
-    async def update_user_list(self, user_id: str, film_id: int, list_type: str):
+    async def update_user_list(self, user_id: str, film_id: int, list_type: str) -> str:
         
         film = await check_record_existence(db=self.db, model=Film, record_id=film_id)
         user = await check_record_existence(self.db, User, user_id)
@@ -153,15 +151,16 @@ class UserFilmCRUD:
         return await self._update_user_list(user, user_list_attribute, film)
 
     
-    def _create_film_data(self, film: Film) -> dict:
+    async def _create_film_data(self, film: Film) -> dict:
         return {
             "id": film.id, "title": film.title, "poster": film.poster,
             "rating": film.average_rating, "genres": film.genres
         }
 
-    async def _update_user_list(self, user: User, user_list_attribute: str, film: Film):
+
+    async def _update_user_list(self, user: User, user_list_attribute: str, film: Film) -> str:
         
-        film_data = self._create_film_data(film=film)
+        film_data = await self._create_film_data(film=film)
         
         # Получаем текущий список пользователя, который пользователь хочет обновить
         target_user_list = getattr(user, user_list_attribute, [])
@@ -174,30 +173,21 @@ class UserFilmCRUD:
                 user_list_attribute=user_list_attribute
             )
         
-        await self._toggle_film_data_in_user_list(target_user_list=target_user_list, film=film)
-
-        user_update_data = {user_list_attribute: target_user_list}
-        user_update = await UserDAO.update(self.db, User.id == user.id, obj_in=user_update_data)
-        
-        self.db.add(user_update)
-        await self.db.commit()
-        await self.db.refresh(user_update)   
+        await self._toggle_film_data_in_user_list(target_user_list=target_user_list, film_data=film_data)
+        await self._update_user_in_database(user, user_list_attribute, target_user_list) 
 
         return {"Message": "Update was successful"}
     
-    async def _toggle_film_data_in_user_list(self, target_user_list: list, film: Film):
+    
+    async def _toggle_film_data_in_user_list(self, target_user_list: list, film_data: dict):
         
-        film_data = self._create_film_data(film=film)
-            
         if film_data in target_user_list:
             target_user_list.remove(film_data)
-            return "Deleted from target_list"
         else:
             target_user_list.append(film_data)
-            return f"Added to target_list"
     
     
-    async def _check_other_user_lists(self, film_data: dict, user: User, user_list_attribute: str):     
+    async def _check_other_user_lists(self, film_data: dict, user: User, user_list_attribute: str) -> None:     
                 
         # Проверка, что film_id не находится в других списках и не является записью в списке favorite_films
         other_list_attributes = [key for key in self.LIST_TYPES.values()if key != user_list_attribute and key != "favorite_films"]
@@ -206,19 +196,20 @@ class UserFilmCRUD:
             
             other_list = getattr(user, other_list_attribute, [])
             
-            if film_data in other_list:
-                
-                # Если film_id найден в другом списке, удаляем его оттуда
+            if film_data in other_list:         
                 other_list.remove(film_data)
                 
-                user_update_data = {other_list_attribute: other_list}
-                user_update = await UserDAO.update(self.db, User.id == user.id, obj_in=user_update_data)
-
-                self.db.add(user_update)
-                await self.db.commit()
-                await self.db.refresh(user_update)
+                await self._update_user_in_database(user, other_list_attribute, other_list) 
                 
-                return f"deleted from {other_list_attribute}"
+            
+    async def _update_user_in_database(self, user: User, user_list_attribute: str, target_user_list: list) -> None:
+        
+        user_update_data = {user_list_attribute: target_user_list}
+        user_update = await UserDAO.update(self.db, User.id == user.id, obj_in=user_update_data)
+
+        self.db.add(user_update)
+        await self.db.commit()
+        await self.db.refresh(user_update)
      
 
 class DatabaseManager:
