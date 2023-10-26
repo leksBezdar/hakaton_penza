@@ -5,7 +5,9 @@ from typing import Optional
 # Базовая схема для Comment    
 class CommentBase(BaseModel):
     message: str
+    parent_review_id: Optional[int] = None
     parent_comment_id: Optional[int] = None
+    film_id: Optional[int] = None
 
 
 # Схема для создания записи (CRUD - Create)
@@ -14,7 +16,6 @@ class CommentCreate(CommentBase):
 
 # Схема для создания записи (CRUD - Create)
 class CommentCreateDB(CommentBase):
-    film_id: int
     user_id: str
     username: str
 

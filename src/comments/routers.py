@@ -16,7 +16,6 @@ router = APIRouter()
 
 @router.post("/create_comment/", response_model=schemas.CommentBase)
 async def create_comment(
-    film_id: int,
     token: str,
     comment_data: schemas.CommentCreate,
     db: AsyncSession = Depends(get_async_session),
@@ -25,12 +24,13 @@ async def create_comment(
     db_manager = DatabaseManager(db)
     comment_crud = db_manager.comment_crud
 
-    return await comment_crud.create_comment(film_id=film_id, token=token, comment=comment_data)
+    return await comment_crud.create_comment(token=token, comment=comment_data)
 
 
 @router.get("/get_all_comments")
 async def get_all_comments(
-    film_id: int,
+    film_id: int = None,
+    review_id: int = None,
     offset: int = 0,
     limit: int = 10,
     db: AsyncSession = Depends(get_async_session),
@@ -38,7 +38,7 @@ async def get_all_comments(
     db_manager = DatabaseManager(db)
     comment_crud = db_manager.comment_crud
 
-    return await comment_crud.get_all_comments(film_id=film_id, offset=offset, limit=limit)
+    return await comment_crud.get_all_comments(film_id=film_id, parent_review_id=review_id, offset=offset, limit=limit)
 
 
 @router.patch("/update_comment", response_model=schemas.CommentUpdate)

@@ -7,7 +7,7 @@ router = APIRouter()
 
 
 @router.post("/get_ai_avdvice")
-def get_ai_advice(prompt: dict):
+def get_ai_advice(prompt: str):
 
     AIChat = AIManager()
     ai_chat = AIChat.ai_chat

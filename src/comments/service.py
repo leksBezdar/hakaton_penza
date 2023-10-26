@@ -6,6 +6,7 @@ from .models import Comment
 from ..utils import check_record_existence
 from ..auth.service import DatabaseManager as AuthManager
 from ..films.models import Film
+from ..reviews.models import Review
 
 from . import schemas
 
@@ -15,12 +16,15 @@ class CommentCRUD:
     def __init__(self, db: AsyncSession):
         self.db = db 
         
-    async def create_comment(self, film_id: int, token: str, comment: schemas.CommentCreate):
+    async def create_comment(self, token: str, comment: schemas.CommentCreate):
 
         auth_manager = AuthManager(self.db)
         user_crud = auth_manager.user_crud
         
-        film = await check_record_existence(self.db, Film, film_id)
+        if comment.film_id:
+            await check_record_existence(self.db, Film, comment.film_id)
+        if comment.parent_review_id:
+            await check_record_existence(self.db, Review, comment.parent_review_id)
         
         user = await user_crud.get_user_by_access_token(access_token=token)
 
@@ -28,7 +32,6 @@ class CommentCRUD:
             self.db,
             schemas.CommentCreateDB(
                 **comment.model_dump(),
-                film_id=film.id,
                 user_id=user.id,
                 username=user.username,
             )

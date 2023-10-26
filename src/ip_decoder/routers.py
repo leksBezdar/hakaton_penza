@@ -7,8 +7,8 @@ router = APIRouter()
 
 
 @router.get('/get_user_location')
-async def get_user_location():
+async def get_user_location(user_ip: str):
     
     user_location_decoder = IpDecoder()
     
-    return user_location_decoder.get_user_location()
+    return user_location_decoder.get_user_location(user_ip)
