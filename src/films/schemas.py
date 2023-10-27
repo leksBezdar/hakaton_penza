@@ -1,8 +1,6 @@
 from pydantic import BaseModel, constr
 from typing import List, Optional
 
-# Паттерн для age_rating
-age_rating_pattern = '^(G|P|PG13|R|NC17)$'
 
 # Базовая схема для Film
 class FilmBase(BaseModel):
@@ -25,10 +23,6 @@ class FilmBase(BaseModel):
     premiere_world: str
     average_rating: float
     age_rating: Optional[str] = None
-
-    MPAA_rating: Optional[constr(
-        pattern=age_rating_pattern
-    )] = None
 
 
 # Схема для создания записи (CRUD - Create)
@@ -63,5 +57,5 @@ class FilmUpdate(FilmBase):
     box_office_world: Optional[str] = None
     premiere_russia: Optional[str] = None
     premiere_world: Optional[str] = None
-    age_rating: Optional[constr(pattern=age_rating_pattern)] = None
+    age_rating: Optional[str] = None
     average_rating: Optional[float] = None
