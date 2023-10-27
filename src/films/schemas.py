@@ -24,10 +24,12 @@ class FilmBase(BaseModel):
     premiere_russia: Optional[str] = None
     premiere_world: str
     average_rating: float
+    age_rating: Optional[str] = None
 
-    age_rating: constr(
+    MPAA_rating: Optional[constr(
         pattern=age_rating_pattern
-    )
+    )] = None
+
 
 # Схема для создания записи (CRUD - Create)
 class FilmCreate(FilmBase):
