@@ -9,8 +9,6 @@ from src.films.routers import router as films_router
 from src.reviews.routers import router as reviews_router
 from src.comments.routers import router as comments_router
 from src.ai_chat.routers import router as ai_chat_router
-from src.ip_decoder.routers import router as ip_decoder_router
-
 
 app = FastAPI(
     title='movieRank'
@@ -21,8 +19,6 @@ app.include_router(films_router, tags=["Films"])
 app.include_router(reviews_router, tags=["Reviews"])
 app.include_router(comments_router, tags=["Comments"])
 app.include_router(ai_chat_router, tags=["AI_router"])
-app.include_router(ip_decoder_router, tags=["IP_router"])
-
 
 origins = [
     "*"

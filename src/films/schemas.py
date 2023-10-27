@@ -8,19 +8,19 @@ age_rating_pattern = '^(G|P|PG13|R|NC17)$'
 class FilmBase(BaseModel):
     title: str
     poster: str
-    trailer: str
+    trailer: Optional[str] = None
     country: str
     genres: List[str]
     year: int
-    director: str
-    writers: List[str]
-    producers: List[str]
-    cinematographers: List[str]
-    composers: List[str]
-    art_directors: List[str]
-    editor: List[str]
-    budget: str
-    box_office_world: str
+    director: Optional[str] = None
+    writers: Optional[List[str]] = None
+    producers: Optional[List[str]] = None
+    cinematographers: Optional[List[str]] = None
+    composers: Optional[List[str]] = None
+    art_directors: Optional[List[str]] = None
+    editor: Optional[List[str]] = None
+    budget: Optional[str] = None
+    box_office_world: Optional[str]
     premiere_russia: Optional[str]
     premiere_world: str
     average_rating: float
