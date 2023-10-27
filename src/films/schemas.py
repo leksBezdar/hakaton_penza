@@ -20,8 +20,8 @@ class FilmBase(BaseModel):
     art_directors: Optional[List[str]] = None
     editor: Optional[List[str]] = None
     budget: Optional[str] = None
-    box_office_world: Optional[str]
-    premiere_russia: Optional[str]
+    box_office_world: Optional[str] = None
+    premiere_russia: Optional[str] = None
     premiere_world: str
     average_rating: float
 
