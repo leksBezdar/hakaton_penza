@@ -1,4 +1,3 @@
-from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import or_
@@ -53,7 +52,7 @@ class FilmCRUD:
 
         return db_film
 
-    async def get_film(self, film_id: int = None, token: str = None) -> Optional[Film]:
+    async def get_film(self, film_id: int = None, token: str = None) -> Film | None:
         """
         Получает информацию о фильме по его названию или идентификатору.
 

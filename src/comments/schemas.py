@@ -1,13 +1,12 @@
 from pydantic import BaseModel
-from typing import Optional
 
     
 # Базовая схема для Comment    
 class CommentBase(BaseModel):
     message: str
-    parent_review_id: Optional[int] = None
-    parent_comment_id: Optional[int] = None
-    film_id: Optional[int] = None
+    parent_review_id: int | None
+    parent_comment_id: int | None
+    film_id: int | None
 
 
 # Схема для создания записи (CRUD - Create)
@@ -25,4 +24,4 @@ class CommentRead(CommentBase):
 
 # Схема для обновления записи (CRUD - Update)
 class CommentUpdate(BaseModel):
-    message: Optional[str] = None
+    message: str | None

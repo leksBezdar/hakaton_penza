@@ -1,28 +1,28 @@
 from pydantic import BaseModel, constr
-from typing import List, Optional
+from typing import List
 
 
 # Базовая схема для Film
 class FilmBase(BaseModel):
     title: str
     poster: str
-    trailer: Optional[str] = None
+    trailer: str | None
     country: str
     genres: List[str]
     year: int
-    director: Optional[str] = None
-    writers: Optional[List[str]] = None
-    producers: Optional[List[str]] = None
-    cinematographers: Optional[List[str]] = None
-    composers: Optional[List[str]] = None
-    art_directors: Optional[List[str]] = None
-    editor: Optional[List[str]] = None
-    budget: Optional[str] = None
-    box_office_world: Optional[str] = None
-    premiere_russia: Optional[str] = None
+    director: str | None
+    writers: List[str] | None
+    producers: List[str] | None
+    cinematographers: List[str] | None
+    composers: List[str] | None
+    art_directors: List[str] | None
+    editor: List[str] | None
+    budget: str | None
+    box_office_world: str | None
+    premiere_russia: str | None
     premiere_world: str
     average_rating: float
-    age_rating: Optional[str] = None
+    age_rating: str | None
 
 
 # Схема для создания записи (CRUD - Create)
@@ -36,26 +36,26 @@ class FilmCreate(FilmBase):
 # Схема для чтения (CRUD - Read)
 class FilmRead(FilmBase):
     id: int
-    average_rating: Optional[float]
+    average_rating: float | None
 
 # Схема для обновления записи (CRUD - Update)
 class FilmUpdate(FilmBase):
-    title: Optional[str] = None
-    poster: Optional[str] = None
-    trailer: Optional[str] = None
-    country: Optional[str] = None
-    genres: Optional[List[str]] = None
-    year: Optional[int] = None
-    director: Optional[str] = None
-    writers: Optional[List[str]] = None
-    producers: Optional[List[str]] = None
-    cinematographers: Optional[List[str]] = None
-    composers: Optional[List[str]] = None
-    art_directors: Optional[List[str]] = None
-    editor: Optional[List[str]] = None
-    budget: Optional[str] = None
-    box_office_world: Optional[str] = None
-    premiere_russia: Optional[str] = None
-    premiere_world: Optional[str] = None
-    age_rating: Optional[str] = None
-    average_rating: Optional[float] = None
+    title: str | None
+    poster: str | None
+    trailer: str | None
+    country: str | None
+    genres: List[str] | None
+    year: int | None
+    director: str | None
+    writers: List[str] | None
+    producers: List[str] | None
+    cinematographers: List[str] | None
+    composers: List[str] | None
+    art_directors: List[str] | None
+    editor: List[str] | None
+    budget: str | None
+    box_office_world: str | None
+    premiere_russia: str | None
+    premiere_world: str | None
+    age_rating: str | None
+    average_rating: float | None

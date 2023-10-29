@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from typing import Optional
 
 
 # Базовая схема для Review
@@ -25,9 +24,9 @@ class ReviewRead(ReviewBase):
 
 # Схема для обновления записи (CRUD - Update)
 class ReviewUpdate(BaseModel):
-    title: Optional[str] = None
-    message: Optional[str] = None
-    rating: Optional[float] = None
-    likes: Optional[int] = None
-    dislikes: Optional[int] = None
+    title: str | None
+    message: str | None
+    rating: float | None
+    likes: int | None
+    dislikes: int | None
     

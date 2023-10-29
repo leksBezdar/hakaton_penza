@@ -1,7 +1,7 @@
 import re
 
 from pydantic import BaseModel, EmailStr, Field, validator
-from typing import Dict, Optional, List
+from typing import List
 
 from .config import (
     MIN_USERNAME_LENGTH as user_min_len,
@@ -14,11 +14,11 @@ class UserBase(BaseModel):
     email: EmailStr
     username: str
     is_superuser: bool = Field(False)
-    postponed_films: Optional[List] = []
-    planned_films: Optional[List] = []
-    abandoned_films: Optional[List] = []
-    favorite_films: Optional[List] = []
-    finished_films: Optional[List] = []
+    postponed_films: List = []
+    planned_films: List = []
+    abandoned_films: List = []
+    favorite_films: List = []
+    finished_films: List = []
     
 
 class UserCreate(UserBase):
@@ -42,8 +42,8 @@ class UserCreate(UserBase):
         return value
     
 class UserUpdate(UserBase):
-    email: Optional[EmailStr] = None
-    password: Optional[str] = None
+    email: EmailStr | None
+    password: str | None
         
 
 class User(UserBase):
@@ -54,7 +54,7 @@ class User(UserBase):
     
 class UserCreateDB(UserBase):
     id: str
-    hashed_password: Optional[str] = None
+    hashed_password: str | None
        
     
 class RefreshTokenCreate(BaseModel):
@@ -63,7 +63,7 @@ class RefreshTokenCreate(BaseModel):
     user_id: str
 
 class RefreshTokenUpdate(RefreshTokenCreate):
-    user_id: Optional[str] = Field(None)
+    user_id: str | None
     
 class Token(BaseModel):
     access_token: str

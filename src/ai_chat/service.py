@@ -12,7 +12,7 @@ class AIChat:
         num_retries = 0
         
         response = g4f.ChatCompletion.create(
-            model=g4f.models.gpt_35_turbo,
+            model="gpt-3.5-turbo",
             messages=messages,
             provider=GeekGpt,
         )
@@ -23,7 +23,7 @@ class AIChat:
             num_retries += 1
             
             response = g4f.ChatCompletion.create(
-            model=g4f.models.gpt_35_turbo,
+            model="gpt-3.5-turbo",
             messages=messages,
             provider=GeekGpt,
         )

@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import JSONResponse
@@ -95,7 +95,7 @@ async def logout(
 async def get_me(
     db: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(get_current_user)
-) -> Optional[User]:
+) -> User | None:
 
     db_manager = DatabaseManager(db)
     user_crud = db_manager.user_crud
@@ -113,7 +113,7 @@ async def get_user(
     email: str = None,
     user_id: str = None,
     db: AsyncSession = Depends(get_async_session),
-) -> Optional[User]:
+) -> User | None:
 
     db_manager = DatabaseManager(db)
     user_crud = db_manager.user_crud

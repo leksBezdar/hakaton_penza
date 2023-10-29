@@ -1,6 +1,5 @@
 import jwt
 
-from typing import Optional
 from uuid import uuid4
 
 from datetime import datetime, timedelta, timezone
@@ -59,7 +58,7 @@ class UserCRUD:
 
         return db_user
 
-    async def authenticate_user(self, username: str, password: str) -> Optional[User]:
+    async def authenticate_user(self, username: str, password: str) -> User | None:
 
         user = await self.get_existing_user(username=username)
         if not user:
@@ -114,7 +113,7 @@ class UserCRUD:
         return refresh_token
     
     
-    async def get_user_by_access_token(self, access_token: str) -> Optional[User]:
+    async def get_user_by_access_token(self, access_token: str) -> User | None:
         
         user_id = await TokenCrud.get_access_token_payload(self.db, access_token=access_token)
         
