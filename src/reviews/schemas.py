@@ -1,4 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, constr
+
+
+attitude_pattern = '^(positive|negative|neutral)$'
 
 
 # Базовая схема для Review
@@ -6,7 +9,7 @@ class ReviewBase(BaseModel):
     title: str
     film_id: int
     message: str
-    rating: float
+    attitude: constr(pattern=attitude_pattern) | None
 
 
 # Схема для создания записи (CRUD - Create)
@@ -26,7 +29,7 @@ class ReviewRead(ReviewBase):
 class ReviewUpdate(BaseModel):
     title: str | None
     message: str | None
-    rating: float | None
+    attitude: constr(pattern=attitude_pattern) | None
     likes: int | None
     dislikes: int | None
     
