@@ -1,11 +1,15 @@
 from datetime import datetime
+from typing import Annotated
 
-from sqlalchemy import TIMESTAMP, ForeignKey
+from sqlalchemy import TIMESTAMP, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 
+from sqlalchemy.dialects.postgresql import ARRAY
+
 from ..database import Base
 
+user_list = Annotated[list, mapped_column(ARRAY(String), nullable=False, default=[])]
 
 class Review(Base):
     __tablename__ = "reviews"
@@ -19,5 +23,7 @@ class Review(Base):
     attitude: Mapped[str] = mapped_column(nullable=False)
     likes: Mapped[int] = mapped_column(nullable=False, default=0)
     dislikes: Mapped[int] = mapped_column(nullable=False, default=0)
+    liked_by_users: Mapped[user_list]
+    disliked_by_users: Mapped[user_list]
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True),
                                                  server_default=func.now())

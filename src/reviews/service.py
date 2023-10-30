@@ -1,6 +1,8 @@
 from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.auth.models import User
+
 from . import schemas
 from . import exceptions
 
@@ -71,7 +73,47 @@ class ReviewCRUD:
             review_title == Review.title))
 
         await self.db.commit()
+    
+
+    async def rate_the_review(self, user_id: str, review_id: int, action: str):
+
+        review = await check_record_existence(self.db, Review, review_id)
+
+        obj_in = await self._toggle_review_reaction(review, user_id, action)
+        review_update = await ReviewDAO.update(self.db, Review.id == review_id, obj_in=obj_in)
+
+        self.db.add(review_update)
+        await self.db.commit()
+        await self.db.refresh(review_update)
+
+        return await self._get_review_rating(review)
+
+
+    async def _toggle_review_reaction(self, review: Review, user_id: str, action: str):
+        liked_by_users = set(review.liked_by_users)
+        disliked_by_users = set(review.disliked_by_users)
+
+        if action == 'like':
+            if user_id in liked_by_users:
+                liked_by_users.remove(user_id)
+            else:
+                liked_by_users.add(user_id)
+                disliked_by_users.discard(user_id)
+        elif action == 'dislike':
+            if user_id in disliked_by_users:
+                disliked_by_users.remove(user_id)
+            else:
+                disliked_by_users.add(user_id)
+                liked_by_users.discard(user_id)
+
+        return {
+            "liked_by_users": list(liked_by_users),
+            "disliked_by_users": list(disliked_by_users)
+        }
         
+    async def _get_review_rating(self, review: Review):
+
+        return len(review.liked_by_users) - len(review.disliked_by_users)
         
 class DatabaseManager:
     """

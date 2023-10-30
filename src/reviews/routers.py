@@ -68,3 +68,15 @@ async def delete_review(
     })
 
     return response
+
+@router.patch('/rate_review')
+async def rate_review(
+    user_id: str,
+    review_id: int,
+    action: str,
+    db: AsyncSession = Depends(get_async_session)):
+
+    db_manager = DatabaseManager(db)
+    review_crud = db_manager.review_crud
+
+    return await review_crud.rate_the_review(user_id, review_id, action)
