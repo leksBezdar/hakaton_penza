@@ -10,8 +10,6 @@ class ReviewBase(BaseModel):
     film_id: int
     message: str
     attitude: constr(pattern=attitude_pattern) | None
-    liked_by_users: list = []
-    disliked_by_users: list = []
 
 
 # Схема для создания записи (CRUD - Create)

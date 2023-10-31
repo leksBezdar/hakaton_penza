@@ -23,5 +23,6 @@ class Review(Base):
     attitude: Mapped[str] = mapped_column(nullable=False)
     liked_by_users: Mapped[user_list]
     disliked_by_users: Mapped[user_list]
+    review_rating: Mapped[int] = mapped_column(nullable=False, default=0)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True),
                                                  server_default=func.now())

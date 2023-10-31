@@ -86,7 +86,7 @@ class ReviewCRUD:
         await self.db.commit()
         await self.db.refresh(review_update)
 
-        return await self._get_review_rating(review)
+        return review.review_rating
 
 
     async def _toggle_review_reaction(self, review: Review, user_id: str, action: str):
@@ -108,12 +108,13 @@ class ReviewCRUD:
 
         return {
             "liked_by_users": list(liked_by_users),
-            "disliked_by_users": list(disliked_by_users)
+            "disliked_by_users": list(disliked_by_users),
+            "review_rating": await self._get_review_rating(liked_by_users, disliked_by_users)
         }
         
-    async def _get_review_rating(self, review: Review):
+    async def _get_review_rating(self, review_likes: list, review_dislikes: list):
 
-        return len(review.liked_by_users) - len(review.disliked_by_users)
+        return len(review_likes) - len(review_dislikes)
         
 class DatabaseManager:
     """

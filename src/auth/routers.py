@@ -65,7 +65,7 @@ async def login(
             httponly=True
         )
 
-    return token, {"user_id": user.id}
+    return token
 
 
 # Точка выхода пользователя
