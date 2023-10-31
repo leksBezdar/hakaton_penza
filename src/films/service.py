@@ -4,7 +4,7 @@ from sqlalchemy import or_
 
 from ..auth.models import User
 from ..auth.dao import UserDAO
-from ..auth.service import DatabaseManager as AuthManager, TokenCrud
+from ..auth.service import DatabaseManager as AuthManager
 
 from ..utils import check_record_existence
 
@@ -137,8 +137,13 @@ class UserFilmCRUD:
         }
 
 
-    async def update_user_list(self, user_id: str, film_id: int, list_type: str) -> str:
-        
+    async def update_user_list(self, token: str, film_id: int, list_type: str) -> str:
+
+        auth_manager = AuthManager(self.db)
+        token_crud = auth_manager.token_crud
+
+        user_id = await token_crud.get_access_token_payload(access_token=token)
+
         film = await check_record_existence(db=self.db, model=Film, record_id=film_id)
         user = await check_record_existence(self.db, User, user_id)
         

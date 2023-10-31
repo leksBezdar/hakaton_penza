@@ -64,7 +64,7 @@ async def update_film(
 
 @router.patch("/update_user_list")
 async def update_user_list(
-    user_id: str,
+    token: str,
     film_id: int,
     list_type: str,
     db: AsyncSession = Depends(get_async_session),
@@ -74,7 +74,7 @@ async def update_user_list(
     user_film_crud = db_manager.user_film_crud
     
     return await user_film_crud.update_user_list(
-      user_id=user_id,film_id=film_id, list_type=list_type)
+      token=token,film_id=film_id, list_type=list_type)
 
 
 @router.delete("/delete_film")
