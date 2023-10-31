@@ -87,8 +87,6 @@ def upgrade() -> None:
         sa.Column('film_id', sa.Integer(), nullable=False),
         sa.Column('message', sa.String(), nullable=False),
         sa.Column('attitude', sa.String(), nullable=False),
-        sa.Column('likes', sa.Integer(), server_default="0"),
-        sa.Column('dislikes', sa.Integer(), server_default="0"),
         sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
         sa.Column('liked_by_users', ARRAY(sa.String()), nullable=False),
         sa.Column('disliked_by_users', ARRAY(sa.String()), nullable=False),

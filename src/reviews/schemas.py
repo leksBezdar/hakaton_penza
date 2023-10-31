@@ -32,8 +32,6 @@ class ReviewUpdate(BaseModel):
     title: str | None
     message: str | None
     attitude: constr(pattern=attitude_pattern) | None
-    likes: int | None
-    dislikes: int | None
     liked_by_users: list | None  
     disliked_by_users: list | None 
     
