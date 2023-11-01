@@ -91,6 +91,7 @@ def upgrade() -> None:
         sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
         sa.Column('liked_by_users', ARRAY(sa.String()), nullable=False),
         sa.Column('disliked_by_users', ARRAY(sa.String()), nullable=False),
+        sa.Column('review_rating', sa.Integer(), nullable=False, server_default='0'),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['username'], ['users.username'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['film_id'], ['films.id'], ondelete='CASCADE'),

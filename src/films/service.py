@@ -154,8 +154,8 @@ class UserFilmCRUD:
         
         return await self._update_user_list(user, user_list_attribute, film)
 
-    
-    async def _create_film_data(self, film: Film) -> dict:
+    @staticmethod
+    async def _create_film_data(film: Film) -> dict:
         return {
             "id": film.id, "title": film.title, "poster": film.poster,
             "rating": film.average_rating, "genres": film.genres
@@ -183,7 +183,8 @@ class UserFilmCRUD:
         return {"Message": "Update was successful"}
     
     
-    async def _toggle_film_data_in_user_list(self, target_user_list: list, film_data: dict):
+    @staticmethod
+    async def _toggle_film_data_in_user_list(target_user_list: list, film_data: dict):
         
         if film_data in target_user_list:
             target_user_list.remove(film_data)
@@ -226,10 +227,8 @@ class UserFilmCRUD:
         if existing_rating:
             await self._delete_existing_rating(existing_rating)
             
-        await self._create_new_rating(rating_data)
-        await self._update_average_local_rating(film_id)
-        
-        return {"Message": "The evaluation was successful"}
+        await self._create_new_rating(rating_data)       
+        return await self._update_average_local_rating(film_id)
 
     async def _get_existing_rating(self, user_id, film_id) -> UserFilmRating:
         return await UserFilmRatingDAO.find_one_or_none(self.db, UserFilmRating.user_id == user_id, UserFilmRating.film_id == film_id)
@@ -253,14 +252,14 @@ class UserFilmCRUD:
         new_rating = await self._get_average_local_rating(film_id)
         obj_in = {"local_rating": new_rating}
         
-        film_update = await FilmDAO.update(
+        await FilmDAO.update(
             self.db,
             Film.id == film_id,
             obj_in=obj_in)
 
         await self.db.commit()
 
-        return film_update
+        return {"Message": "The evaluation was successful"}
          
     
     async def _get_average_local_rating(self, film_id: int) -> float:

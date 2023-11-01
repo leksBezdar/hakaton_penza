@@ -1,15 +1,12 @@
 from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.auth.models import User
-
 from . import schemas
 from . import exceptions
 
 from .dao import ReviewDAO
 from .models import Review
 
-from ..utils import check_record_existence
 from ..auth.service import DatabaseManager as AuthManager
 from ..films.service import DatabaseManager as FilmManager
 
@@ -47,6 +44,12 @@ class ReviewCRUD:
         await self.db.refresh(db_review)
 
         return db_review
+
+    async def get_review(self, review_id: int) -> Review:
+        
+        review = await ReviewDAO.find_one_or_none(self.db, Review.id == review_id)
+        
+        return review
     
 
     async def get_all_reviews(self, *filter, offset: int = 0, limit: int = 100, **filter_by) -> list[Review]:
@@ -77,7 +80,7 @@ class ReviewCRUD:
 
     async def rate_the_review(self, user_id: str, review_id: int, action: str):
 
-        review = await check_record_existence(self.db, Review, review_id)
+        review = await self.get_review(review_id)
 
         obj_in = await self._toggle_review_reaction(review, user_id, action)
         review_update = await ReviewDAO.update(self.db, Review.id == review_id, obj_in=obj_in)
@@ -88,29 +91,39 @@ class ReviewCRUD:
 
         return review.review_rating
 
-
     async def _toggle_review_reaction(self, review: Review, user_id: str, action: str):
+        
         liked_by_users = set(review.liked_by_users)
         disliked_by_users = set(review.disliked_by_users)
 
         if action == 'like':
-            if user_id in liked_by_users:
-                liked_by_users.remove(user_id)
-            else:
-                liked_by_users.add(user_id)
-                disliked_by_users.discard(user_id)
+            self._handle_like(liked_by_users, disliked_by_users, user_id)
         elif action == 'dislike':
-            if user_id in disliked_by_users:
-                disliked_by_users.remove(user_id)
-            else:
-                disliked_by_users.add(user_id)
-                liked_by_users.discard(user_id)
-
+            self._handle_dislike(liked_by_users, disliked_by_users, user_id)
+            
         return {
-            "liked_by_users": list(liked_by_users),
-            "disliked_by_users": list(disliked_by_users),
-            "review_rating": await self._get_review_rating(liked_by_users, disliked_by_users)
-        }
+                "liked_by_users": list(liked_by_users),
+                "disliked_by_users": list(disliked_by_users),
+                "review_rating": await self._get_review_rating(liked_by_users, disliked_by_users)
+            }
+    
+    @staticmethod    
+    def _handle_like(liked_by_users: set, disliked_by_users: set, user_id: str):
+        
+        if user_id in liked_by_users:
+            liked_by_users.remove(user_id)
+        else:
+            liked_by_users.add(user_id)
+            disliked_by_users.discard(user_id)
+            
+    @staticmethod
+    def _handle_dislike(liked_by_users: set, disliked_by_users: set, user_id: str):
+        
+        if user_id in disliked_by_users:
+            disliked_by_users.remove(user_id)
+        else:
+            disliked_by_users.add(user_id)
+            liked_by_users.discard(user_id)
         
     async def _get_review_rating(self, review_likes: list, review_dislikes: list):
 
