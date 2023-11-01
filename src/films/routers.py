@@ -81,7 +81,8 @@ async def update_user_list(
 async def delete_film(
         film_title: str = None,
         film_id: int = None,
-        db: AsyncSession = Depends(get_async_session)):
+        db: AsyncSession = Depends(get_async_session)
+    ):
 
     db_manager = DatabaseManager(db)
     film_crud = db_manager.film_crud
@@ -93,3 +94,14 @@ async def delete_film(
     })
 
     return response
+
+@router.post("/rate_the_film")
+async def rate_the_film(
+    rating_data: schemas.UserFilmRatingCreate,
+    db: AsyncSession = Depends(get_async_session)
+):
+
+    db_manager = DatabaseManager(db)
+    user_film_crud = db_manager.user_film_crud 
+    
+    return await user_film_crud.rate_the_film(rating_data)

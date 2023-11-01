@@ -1,6 +1,6 @@
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import or_
+from sqlalchemy import func, or_, select
 
 from ..auth.models import User
 from ..auth.dao import UserDAO
@@ -8,8 +8,8 @@ from ..auth.service import DatabaseManager as AuthManager
 
 from ..utils import check_record_existence
 
-from .dao import FilmDAO
-from .models import Film
+from .dao import FilmDAO, UserFilmRatingDAO
+from .models import Film, UserFilmRating
 
 from . import schemas
 from . import exceptions
@@ -214,8 +214,64 @@ class UserFilmCRUD:
         self.db.add(user_update)
         await self.db.commit()
         await self.db.refresh(user_update)
-     
+    
+    
+    async def rate_the_film(self, rating_data: schemas.UserFilmRatingCreate):
+        
+        user_id = rating_data.user_id
+        film_id = rating_data.film_id
+        
+        existing_rating = await self._get_existing_rating(user_id, film_id)
 
+        if existing_rating:
+            await self._delete_existing_rating(existing_rating)
+            
+        await self._create_new_rating(rating_data)
+        await self._update_average_local_rating(film_id)
+        
+        return {"Message": "The evaluation was successful"}
+
+    async def _get_existing_rating(self, user_id, film_id) -> UserFilmRating:
+        return await UserFilmRatingDAO.find_one_or_none(self.db, UserFilmRating.user_id == user_id, UserFilmRating.film_id == film_id)
+
+    async def _delete_existing_rating(self, existing_rating: UserFilmRating):
+        await UserFilmRatingDAO.delete(self.db, UserFilmRating.id == existing_rating.id)
+
+    async def _create_new_rating(self, rating_data: schemas.UserFilmRatingCreate):
+        new_rating = UserFilmRating(
+            user_id=rating_data.user_id,
+            film_id=rating_data.film_id,
+            rating=rating_data.rating
+        )
+        self.db.add(new_rating)
+        await self.db.commit()
+        await self.db.refresh(new_rating)
+        return new_rating
+    
+    async def _update_average_local_rating(self, film_id: int):
+        
+        new_rating = await self._get_average_local_rating(film_id)
+        obj_in = {"local_rating": new_rating}
+        
+        film_update = await FilmDAO.update(
+            self.db,
+            Film.id == film_id,
+            obj_in=obj_in)
+
+        await self.db.commit()
+
+        return film_update
+         
+    
+    async def _get_average_local_rating(self, film_id: int) -> float:
+        
+        films = await UserFilmRatingDAO.find_all(self.db, Film.id == film_id)
+
+        ratings = [film.rating for film in films]
+        
+        return sum(ratings) / len(ratings)
+        
+        
 class DatabaseManager:
     """
     Класс для управления всеми CRUD-классами и применения изменений к базе данных.

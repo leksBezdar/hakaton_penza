@@ -23,6 +23,7 @@ class FilmBase(BaseModel):
     premiere_world: str
     average_rating: float
     age_rating: str | None
+    local_rating: float 
 
 
 # Схема для создания записи (CRUD - Create)
@@ -37,6 +38,7 @@ class FilmCreate(FilmBase):
 class FilmRead(FilmBase):
     id: int
     average_rating: float | None
+    local_rating: float | None
 
 # Схема для обновления записи (CRUD - Update)
 class FilmUpdate(FilmBase):
@@ -59,3 +61,22 @@ class FilmUpdate(FilmBase):
     premiere_world: str | None
     age_rating: str | None
     average_rating: float | None
+    
+
+class UserFilmRatingCreate(BaseModel):
+    user_id: str
+    film_id: int
+    rating: float
+
+class UserFilmRatingUpdate(BaseModel):
+    rating: float
+
+class UserFilmRatingRead(UserFilmRatingCreate):
+    id: int
+
+class UserFilmRatingDelete(BaseModel):
+    id: int
+
+class UserFilmRatingList(BaseModel):
+    items: List[UserFilmRatingRead]
+
