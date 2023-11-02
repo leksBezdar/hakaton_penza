@@ -24,6 +24,7 @@ class FilmBase(BaseModel):
     average_rating: float
     age_rating: str | None
     local_rating: float 
+    description: str
 
 
 # Схема для создания записи (CRUD - Create)

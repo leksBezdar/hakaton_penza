@@ -17,5 +17,5 @@ class Comment(Base):
     message: Mapped[str] = mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True),
                                                  server_default=func.now())
-    parent_review_id: Mapped[int] = mapped_column(ForeignKey("reviews.id"))
-    parent_comment_id: Mapped[int] = mapped_column(ForeignKey("comments.id"))
+    parent_review_id: Mapped[int] = mapped_column(ForeignKey("reviews.id"), nullable=True)
+    parent_comment_id: Mapped[int] = mapped_column(ForeignKey("comments.id"), nullable=True)

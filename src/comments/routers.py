@@ -21,6 +21,7 @@ async def create_comment(
     db: AsyncSession = Depends(get_async_session),
 ) -> Comment:
 
+    print(10)
     db_manager = DatabaseManager(db)
     comment_crud = db_manager.comment_crud
 

@@ -4,9 +4,9 @@ from pydantic import BaseModel
 # Базовая схема для Comment    
 class CommentBase(BaseModel):
     message: str
-    parent_review_id: int | None
-    parent_comment_id: int | None
-    film_id: int | None
+    parent_review_id: int | None = None
+    parent_comment_id: int | None = None
+    film_id: int | None = None
 
 
 # Схема для создания записи (CRUD - Create)
