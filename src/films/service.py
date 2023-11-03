@@ -28,16 +28,9 @@ class FilmCRUD:
         self.db = db
 
     async def create_film(self, film: schemas.FilmCreate) -> Film:
-        """
-        Создает новую запись о фильме в базе данных.
-
-        Args:
-            film (schemas.FilmCreate): Данные о фильме для создания.
-
-        Returns:
-            Film: Созданная запись о фильме.
-
-        """
+        
+        if await self._check_existing_film(film.title, film.trailer, film.poster):
+            raise exceptions.FilmAlreadyExists
 
         db_film = await FilmDAO.add(
             self.db,
@@ -52,7 +45,7 @@ class FilmCRUD:
 
         return db_film
 
-    async def get_film(self, film_id: int = None, token: str = None) -> Film | None:
+    async def get_film(self, film_id: int = None) -> Film | None:
         """
         Получает информацию о фильме по его названию или идентификатору.
 
@@ -123,6 +116,16 @@ class FilmCRUD:
 
         await self.db.commit()
         
+        
+    async def _check_existing_film(self, title: str, trailer: str, poster: str) -> bool:
+        
+        film = await FilmDAO.find_one_or_none(self.db, or_(
+            Film.title == title,
+            Film.poster == poster,
+            Film.trailer == trailer
+        ))
+        
+        return bool(film)
 
 class UserFilmCRUD:
     

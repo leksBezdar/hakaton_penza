@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.auth.routers import router as auth_router
+from src.recommendations.routers import router as recommendations_router
 from src.films.routers import router as films_router
 from src.reviews.routers import router as reviews_router
 from src.comments.routers import router as comments_router
@@ -19,6 +20,7 @@ app.include_router(films_router, tags=["Films"])
 app.include_router(reviews_router, tags=["Reviews"])
 app.include_router(comments_router, tags=["Comments"])
 app.include_router(ai_chat_router, tags=["AI_router"])
+app.include_router(recommendations_router, tags=["Recommendations_router"])
 
 origins = [
     "*"

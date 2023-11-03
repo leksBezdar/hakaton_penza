@@ -1,6 +1,6 @@
 from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
 
-from sqlalchemy import delete, insert, select, update, text
+from sqlalchemy import delete, insert, select, update
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
@@ -67,8 +67,6 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             .offset(offset)
             .limit(limit)
         )
-
-        print(stmt)
         result = await db.execute(stmt)
         return result.scalars().all()
 

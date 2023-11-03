@@ -23,7 +23,7 @@ class FilmBase(BaseModel):
     premiere_world: str
     average_rating: float
     age_rating: str | None
-    local_rating: float 
+    local_rating: float = 0
     description: str
 
 

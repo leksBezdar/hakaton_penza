@@ -1,35 +1,35 @@
+import re
 import g4f
 from g4f.Provider import GeekGpt
+
+from requests.exceptions import HTTPError
 
 class AIChat:
     def __init__(self):
         self.messages = []
 
-    @staticmethod
-    def _ask_gpt(messages: list) -> str:
+    def _ask_gpt(self, messages: list) -> str:
         
-        max_retries = 5
-        num_retries = 0
-        
-        response = g4f.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=messages,
-            provider=GeekGpt,
-        )
-        
-        # Иногда по непонятной причине возвращает пустой ответ, попытка уменьшить вероятность на пустой ответ.
-        while num_retries < max_retries:
-            
-            num_retries += 1
-            
-            response = g4f.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=messages,
-            provider=GeekGpt,
-        )
-        
-        return response
+        try:
+             # Иногда по непонятной причине возвращает пустой ответ, попытка уменьшить вероятность на пустой ответ.
+            for _ in range(5):
 
+                response = g4f.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=messages,
+                provider=GeekGpt
+            )
+
+                if len(response) > 1 and self._has_russian_letters(response):
+                
+                    return response
+                
+        except HTTPError as e:
+            
+            error_message = "Something went wrong... Please, try again"
+            
+            return error_message
+        
     def get_ai_advice(self, prompt: str) -> str:
         
         self.messages.append({"role": "user", "content": prompt})
@@ -40,6 +40,9 @@ class AIChat:
 
         return gpt_response
 
+    @staticmethod
+    def _has_russian_letters(response: str):
+        return bool(re.search('[а-яА-Я]', response))
 
 
 class AIManager:
