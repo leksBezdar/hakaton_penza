@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..films.dao import UserFilmRatingDAO
+from ..user_film_actions.dao import UserFilmRatingDAO
 
 from ..database import get_async_session
 

@@ -35,13 +35,3 @@ class Film(Base):
 
     average_rating: Mapped[float] = mapped_column(nullable=True)
     local_rating: Mapped[float] = mapped_column(nullable=True)
-
-
-class UserFilmRating(Base):
-    __tablename__ = 'user_film_ratings'
-    
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
-    film_id: Mapped[int] = mapped_column(ForeignKey("films.id", ondelete="CASCADE"))
-    rating: Mapped[float] = mapped_column(nullable=False)
-    

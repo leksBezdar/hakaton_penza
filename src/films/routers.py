@@ -26,14 +26,13 @@ async def create_film(
 
 @router.get("/get_film/", response_model=schemas.FilmRead)
 async def get_film(
-    token: str = None,
     film_id: int = None,
     db: AsyncSession = Depends(get_async_session),
 ) -> Film:
     db_manager = DatabaseManager(db)
     film_crud = db_manager.film_crud
 
-    return await film_crud.get_film(token=token, film_id=film_id)
+    return await film_crud.get_film(film_id=film_id)
 
 
 @router.get("/get_all_films")
@@ -61,22 +60,6 @@ async def update_film(
     return await film_crud.update_film(film_id=film_id, film_in=film_data)
 
 
-
-@router.patch("/update_user_list")
-async def update_user_list(
-    token: str,
-    film_id: int,
-    list_type: str,
-    db: AsyncSession = Depends(get_async_session),
-):
-      
-    db_manager = DatabaseManager(db)
-    user_film_crud = db_manager.user_film_crud
-    
-    return await user_film_crud.update_user_list(
-      token=token,film_id=film_id, list_type=list_type)
-
-
 @router.delete("/delete_film")
 async def delete_film(
         film_title: str = None,
@@ -94,14 +77,3 @@ async def delete_film(
     })
 
     return response
-
-@router.post("/rate_the_film")
-async def rate_the_film(
-    rating_data: schemas.UserFilmRatingCreate,
-    db: AsyncSession = Depends(get_async_session)
-):
-
-    db_manager = DatabaseManager(db)
-    user_film_crud = db_manager.user_film_crud 
-    
-    return await user_film_crud.rate_the_film(rating_data)

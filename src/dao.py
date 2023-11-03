@@ -67,6 +67,7 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             .offset(offset)
             .limit(limit)
         )
+        print(stmt)
         result = await db.execute(stmt)
         return result.scalars().all()
 

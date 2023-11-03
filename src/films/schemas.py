@@ -62,22 +62,4 @@ class FilmUpdate(FilmBase):
     premiere_world: str | None
     age_rating: str | None
     average_rating: float | None
-    
-
-class UserFilmRatingCreate(BaseModel):
-    user_id: str
-    film_id: int
-    rating: float
-
-class UserFilmRatingUpdate(BaseModel):
-    rating: float
-
-class UserFilmRatingRead(UserFilmRatingCreate):
-    id: int
-
-class UserFilmRatingDelete(BaseModel):
-    id: int
-
-class UserFilmRatingList(BaseModel):
-    items: List[UserFilmRatingRead]
 
