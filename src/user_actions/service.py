@@ -1,5 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..reviews.dao import ReviewDAO
+from ..reviews.models import Review
+
 from ..auth.models import User
 from ..auth.dao import UserDAO
 from ..auth.service import DatabaseManager as AuthManager
@@ -161,6 +164,64 @@ class UserFilmCRUD:
         ratings = [film.rating for film in films]
         
         return sum(ratings) / len(ratings)
+
+
+class UserReviewCRUD:
+    
+    def __init__(self, db: AsyncSession):
+        self.db = db
+        
+    
+    async def rate_the_review(self, user_id: str, review_id: int, action: str):
+
+        review = await ReviewDAO.find_one_or_none(self.db, Review.id == review_id)
+
+        obj_in = await self._toggle_review_reaction(review, user_id, action)
+        review_update = await ReviewDAO.update(self.db, Review.id == review_id, obj_in=obj_in)
+
+        self.db.add(review_update)
+        await self.db.commit()
+        await self.db.refresh(review_update)
+
+        return review.review_rating
+
+    async def _toggle_review_reaction(self, review: Review, user_id: str, action: str):
+        
+        liked_by_users = set(review.liked_by_users)
+        disliked_by_users = set(review.disliked_by_users)
+
+        if action == 'like':
+            self._handle_like(liked_by_users, disliked_by_users, user_id)
+        elif action == 'dislike':
+            self._handle_dislike(liked_by_users, disliked_by_users, user_id)
+            
+        return {
+                "liked_by_users": list(liked_by_users),
+                "disliked_by_users": list(disliked_by_users),
+                "review_rating": await self._get_review_rating(liked_by_users, disliked_by_users)
+            }
+    
+    @staticmethod    
+    def _handle_like(liked_by_users: set, disliked_by_users: set, user_id: str):
+        
+        if user_id in liked_by_users:
+            liked_by_users.remove(user_id)
+        else:
+            liked_by_users.add(user_id)
+            disliked_by_users.discard(user_id)
+            
+    @staticmethod
+    def _handle_dislike(liked_by_users: set, disliked_by_users: set, user_id: str):
+        
+        if user_id in disliked_by_users:
+            disliked_by_users.remove(user_id)
+        else:
+            disliked_by_users.add(user_id)
+            liked_by_users.discard(user_id)
+        
+    async def _get_review_rating(self, review_likes: list, review_dislikes: list):
+
+        return len(review_likes) - len(review_dislikes)
         
 
 class DatabaseManager:
@@ -175,6 +236,7 @@ class DatabaseManager:
     def __init__(self, db: AsyncSession):
         self.db = db
         self.user_film_crud = UserFilmCRUD(db)
+        self.user_review_crud = UserFilmCRUD(db)
 
     async def commit(self):
         await self.db.commit()

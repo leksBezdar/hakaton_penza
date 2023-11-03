@@ -37,3 +37,16 @@ async def rate_the_film(
     user_film_crud = db_manager.user_film_crud 
     
     return await user_film_crud.rate_the_film(rating_data)
+
+
+@router.patch('/rate_review')
+async def rate_review(
+    user_id: str,
+    review_id: int,
+    action: str,
+    db: AsyncSession = Depends(get_async_session)):
+
+    db_manager = DatabaseManager(db)
+    user_review_crud = db_manager.user_review_crud
+
+    return await user_review_crud.rate_the_film(user_id, review_id, action)

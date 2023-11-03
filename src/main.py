@@ -10,7 +10,7 @@ from src.films.routers import router as films_router
 from src.reviews.routers import router as reviews_router
 from src.comments.routers import router as comments_router
 from src.ai_chat.routers import router as ai_chat_router
-from src.user_film_actions.routers import router as user_action_router
+from src.user_actions.routers import router as user_action_router
 
 
 app = FastAPI(
