@@ -1,4 +1,5 @@
 import pandas as pd
+from time import perf_counter
 
 from fastapi import APIRouter, Depends
 
@@ -17,6 +18,8 @@ router = APIRouter()
 
 @router.get('/get_matrix')
 async def get_matrix(db: AsyncSession = Depends(get_async_session)):
+
+    start = perf_counter()
     
     films_manager = film_manager(db)
     users_manager = auth_manager(db)
@@ -39,5 +42,6 @@ async def get_matrix(db: AsyncSession = Depends(get_async_session)):
 
     rating_matrix = rating_matrix.fillna(0)
     
+    print(perf_counter() - start)
     
     return rating_matrix.to_json()
