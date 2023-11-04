@@ -21,19 +21,14 @@ from .dao import RefreshTokenDAO, UserDAO
 from .models import Refresh_token, User
 
 
-# Определение класса для управления операциями с пользователями в базе данных
 class UserCRUD:
 
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    # Создание новой записи о пользователе в базе данных
     async def create_user(self, user: schemas.UserCreate) -> models.User:
 
-        # Проверка на существующего пользователя по email и username
-        user_exist = await self.get_existing_user(email=user.email, username=user.username)
-
-        if user_exist:
+        if await self.get_existing_user(email=user.email, username=user.username):
             raise exceptions.UserAlreadyExists
 
         # Генерирование уникального ID для пользователя
@@ -102,9 +97,7 @@ class UserCRUD:
         user = await UserDAO.find_one_or_none(self.db, or_(
             User.email == email,
             User.username == username,
-            User.id == user_id))
-        
-            
+            User.id == user_id))         
 
         return user
 
@@ -186,7 +179,7 @@ class TokenCrud:
 
     # Функция для создания access токена с указанием срока действия
 
-    async def create_access_token(self, data: str):
+    async def _create_access_token(self, data: str):
 
         """ Создает access токен """
 
@@ -209,15 +202,15 @@ class TokenCrud:
 
     # Создание refresh токена
 
-    async def create_refresh_token(self) -> str:
+    async def _create_refresh_token(self) -> str:
         return str(uuid4())
 
     # Создание access и refresh токенов для пользователя
     async def create_tokens(self, user_id: str, response: Response, isDev: bool):
 
         # Создание access и refresh токенов на основе payload
-        access_token = await self.create_access_token(user_id)
-        refresh_token = await self.create_refresh_token()
+        access_token = await self._create_access_token(user_id)
+        refresh_token = await self._create_refresh_token()
 
         refresh_token_expires = timedelta(
             days=int(REFRESH_TOKEN_EXPIRE_DAYS))
@@ -270,8 +263,8 @@ class TokenCrud:
         
         refresh_token_session, user = await self._check_refresh_token_session(token)
 
-        access_token = await self.create_access_token(data=user.id)
-        refresh_token = await self.create_refresh_token()
+        access_token = await self._create_access_token(data=user.id)
+        refresh_token = await self._create_refresh_token()
 
         refresh_token_expires = timedelta(days=int(REFRESH_TOKEN_EXPIRE_DAYS))
 
