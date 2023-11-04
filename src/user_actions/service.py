@@ -236,7 +236,7 @@ class DatabaseManager:
     def __init__(self, db: AsyncSession):
         self.db = db
         self.user_film_crud = UserFilmCRUD(db)
-        self.user_review_crud = UserFilmCRUD(db)
+        self.user_review_crud = UserReviewCRUD(db)
 
     async def commit(self):
         await self.db.commit()

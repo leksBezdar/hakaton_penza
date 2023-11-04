@@ -49,4 +49,4 @@ async def rate_review(
     db_manager = DatabaseManager(db)
     user_review_crud = db_manager.user_review_crud
 
-    return await user_review_crud.rate_the_film(user_id, review_id, action)
+    return await user_review_crud.rate_the_review(user_id, review_id, action)
