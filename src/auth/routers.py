@@ -1,12 +1,8 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, Request, Response
-from fastapi.responses import JSONResponse
-from fastapi.security import OAuth2PasswordRequestForm
 
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from .config import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
 
 from . import schemas
 
@@ -19,7 +15,6 @@ from ..database import get_async_session
 router = APIRouter()
 
 
-# Регистрация нового пользователя
 @router.post("/registration/", response_model=schemas.User)
 async def create_user(
     user_data: schemas.UserCreate,
@@ -32,10 +27,8 @@ async def create_user(
     return await user_crud.create_user(user=user_data)
 
 
-# Точка входа пользователя
 @router.post("/login/")
 async def login(
-    request: Request,
     response: Response,
     username: str,
     password: str,
@@ -48,45 +41,21 @@ async def login(
     token_crud = db_manager.token_crud
 
     user = await user_crud.authenticate_user(username=username, password=password)
-
-    token = await token_crud.create_tokens(user_id=user.id)
-    
-    if isDev:
-        response.set_cookie(
-            'access_token',
-            token.access_token,
-            max_age=ACCESS_TOKEN_EXPIRE_MINUTES,
-            httponly=True
-        )
-        response.set_cookie(
-            'refresh_token',
-            token.refresh_token,
-            max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
-            httponly=True
-        )
+    token = await token_crud.create_tokens(user_id=user.id, response=response, isDev=isDev)
 
     return token, user.id
 
 
-# Точка выхода пользователя
 @router.post("/logout/")
 async def logout(
     request: Request,
     response: Response,
     db: AsyncSession = Depends(get_async_session),
 ):
-
     db_manager = DatabaseManager(db)
     user_crud = db_manager.user_crud
 
     await user_crud.logout(refresh_token=request.cookies.get('refresh_token'))
-
-    response = JSONResponse(content={
-        "message": "logout successful",
-    })
-
-    response.delete_cookie(key="access_token")
-    response.delete_cookie(key="refresh_token")
 
     return response
 
@@ -105,7 +74,6 @@ async def get_me(
     return user
 
 
-# Получение информации о пользователе по имени пользователя
 @router.get("/get_user", response_model=None)
 async def get_user(
     token: str = None,
@@ -123,7 +91,6 @@ async def get_user(
     return user
 
 
-# Получение списка всех пользователей
 @router.get("/get_all_users", response_model=List[schemas.User])
 async def get_all_users(
     offset: int = 0,
@@ -146,20 +113,7 @@ async def refresh_token(
     db_manager = DatabaseManager(db)
     token_crud = db_manager.token_crud
 
-    new_token = await token_crud.refresh_token(request.cookies.get("refresh_token"))
-
-    response.set_cookie(
-        'access_token',
-        new_token.access_token,
-        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
-        httponly=True,
-    )
-    response.set_cookie(
-        'refresh_token',
-        new_token.refresh_token,
-        max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
-        httponly=True,
-    )
+    new_token = await token_crud.refresh_token(request.cookies.get("refresh_token"), response=response)
 
     return new_token
 
@@ -175,11 +129,7 @@ async def delete_user_sessions(
     db_manager = DatabaseManager(db)
     user_crud = db_manager.user_crud
 
-    await user_crud.abort_user_sessions(username=username, email=email, user_id=user_id)
-
-    response = JSONResponse(content={
-        "message": "Delete successful",
-    })
+    response = await user_crud.abort_user_sessions(username=username, email=email, user_id=user_id)
 
     return response
 
@@ -195,10 +145,6 @@ async def delete_user(
     db_manager = DatabaseManager(db)
     user_crud = db_manager.user_crud
 
-    await user_crud.delete_user(username=username, email=email, user_id=user_id)
-
-    response = JSONResponse(content={
-        "message": "Delete successful",
-    })
+    response = await user_crud.delete_user(username=username, email=email, user_id=user_id)
 
     return response

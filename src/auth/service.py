@@ -1,10 +1,11 @@
+from fastapi.responses import JSONResponse
 import jwt
 
 from uuid import uuid4
 
 from datetime import datetime, timedelta, timezone
 
-from fastapi import Request
+from fastapi import Request, Response
 from sqlalchemy import or_, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -75,9 +76,18 @@ class UserCRUD:
         refresh_session = await RefreshTokenDAO.find_one_or_none(self.db, Refresh_token.refresh_token == refresh_token)
 
         if refresh_session:
-            await RefreshTokenDAO.delete(self.db, id=refresh_session.id)
+            await RefreshTokenDAO.delete(self.db, id=refresh_session.id)   
 
+        response = JSONResponse(content={
+            "message": "logout successful",
+        })
+    
+        response.delete_cookie(key="access_token")
+        response.delete_cookie(key="refresh_token")
+        
         await self.db.commit()
+        
+        return response
 
     # Проверка наличия пользователя с заданной электронной почтой, именем пользователя или ID
 
@@ -141,6 +151,8 @@ class UserCRUD:
         )
 
         await self.db.commit()
+        
+        return {"message": "Delete successful"}
 
     async def delete_user(self, email: str = None, username: str = None, user_id: str = None) -> None:
 
@@ -163,6 +175,8 @@ class UserCRUD:
             email == User.email))
 
         await self.db.commit()
+        
+        return {"Message": "Delete was successful"}
 
 
 class TokenCrud:
@@ -199,7 +213,7 @@ class TokenCrud:
         return str(uuid4())
 
     # Создание access и refresh токенов для пользователя
-    async def create_tokens(self, user_id: str):
+    async def create_tokens(self, user_id: str, response: Response, isDev: bool):
 
         # Создание access и refresh токенов на основе payload
         access_token = await self.create_access_token(user_id)
@@ -215,11 +229,28 @@ class TokenCrud:
                 refresh_token=refresh_token,
                 expires_at=refresh_token_expires.total_seconds()
             )
-        )
+        )     
         await self.db.commit()
         await self.db.refresh(db_token)
+        
+        if isDev:
+            await self._set_cookies(response=response, access_token=access_token, refresh_token=refresh_token)
 
         return schemas.Token(access_token=access_token, refresh_token=refresh_token)
+    
+    async def _set_cookies(self, response: Response, access_token: str, refresh_token: str):
+            response.set_cookie(
+                'access_token',
+                access_token,
+                max_age=ACCESS_TOKEN_EXPIRE_MINUTES,
+                httponly=True
+            )
+            response.set_cookie(
+                'refresh_token',
+                refresh_token,
+                max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+                httponly=True
+            )
 
     async def get_access_token_payload(db: AsyncSession, access_token: str):
         try:
@@ -229,30 +260,15 @@ class TokenCrud:
             user_id = payload.get("sub")
             return user_id
 
-
-
         except jwt.ExpiredSignatureError:
             raise exceptions.TokenExpired
 
         except jwt.DecodeError:
             raise exceptions.InvalidToken
 
-    async def refresh_token(self, token: str) -> schemas.Token:
-
-        refresh_token_session = await RefreshTokenDAO.find_one_or_none(self.db, Refresh_token.refresh_token == token)
-
-        if refresh_token_session is None:
-            raise exceptions.InvalidToken
-
-        if datetime.now(timezone.utc) >= refresh_token_session.created_at + timedelta(seconds=refresh_token_session.expires_at):
-
-            await RefreshTokenDAO.delete(id=refresh_token_session.id)
-            raise exceptions.TokenExpired
-
-        user = await UserDAO.find_one_or_none(self.db, id=refresh_token_session.user_id)
-
-        if user is None:
-            raise exceptions.InvalidToken
+    async def refresh_token(self, token: str, response: Response) -> schemas.Token:
+        
+        refresh_token_session, user = await self._check_refresh_token_session(token)
 
         access_token = await self.create_access_token(data=user.id)
         refresh_token = await self.create_refresh_token()
@@ -264,13 +280,34 @@ class TokenCrud:
             Refresh_token.id == refresh_token_session.id,
             obj_in=schemas.RefreshTokenUpdate(
                 refresh_token=refresh_token,
-                expires_at=refresh_token_expires.total_seconds()
+                expires_at=refresh_token_expires.total_seconds(),
+                user_id=user.id,
             )
         )
         await self.db.commit()
+        
+        await self._set_cookies(response=response, access_token=access_token, refresh_token=refresh_token)
 
         return schemas.Token(access_token=access_token, refresh_token=refresh_token)
 
+    async def _check_refresh_token_session(self, token: str):
+        
+        refresh_token_session = await RefreshTokenDAO.find_one_or_none(self.db, Refresh_token.refresh_token == token)
+
+        if refresh_token_session is None:      
+            raise exceptions.InvalidToken
+
+        if datetime.now(timezone.utc) >= refresh_token_session.created_at + timedelta(seconds=refresh_token_session.expires_at):
+
+            await RefreshTokenDAO.delete(id=refresh_token_session.id)     
+            raise exceptions.TokenExpired
+            
+        user = await UserDAO.find_one_or_none(self.db, id=refresh_token_session.user_id)
+
+        if user is None:            
+            raise exceptions.InvalidToken
+        
+        return refresh_token_session, user
 
 # Определение класса для управления всеми crud-классами
 class DatabaseManager:
