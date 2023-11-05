@@ -57,11 +57,11 @@ class UserCRUD:
     async def authenticate_user(self, username: str, password: str) -> User | None:
 
         user = await self.get_existing_user(username=username)
-        if not user:
+        is_valid_password = await utils.validate_password(password=password, hashed_password=user.hashed_password)
+        if not user or not is_valid_password:
             raise exceptions.InvalidCredentials
 
-        if user and await utils.validate_password(password=password, hashed_password=user.hashed_password):
-            return user
+        return user
 
     async def logout(self, refresh_token: str = None) -> None:
 
@@ -109,7 +109,7 @@ class UserCRUD:
 
         return users
 
-    async def get_refresh_token_by_user_id(self, user: models.User) -> models.Refresh_token:
+    async def _get_refresh_token_by_user_id(self, user: models.User) -> models.Refresh_token:
 
         refresh_token = await RefreshTokenDAO.find_one_or_none(self.db, Refresh_token.user_id == user.id)
 

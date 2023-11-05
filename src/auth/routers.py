@@ -35,7 +35,6 @@ async def login(
     isDev: bool = False,
     db: AsyncSession = Depends(get_async_session),
 ):
-
     db_manager = DatabaseManager(db)
     user_crud = db_manager.user_crud
     token_crud = db_manager.token_crud

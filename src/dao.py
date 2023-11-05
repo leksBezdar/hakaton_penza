@@ -57,7 +57,7 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         db: AsyncSession,
         *filter,
         offset: int = 0,
-        limit: int = 100,
+        limit: int = 10000,
         **filter_by
     ) -> List[ModelType]:
         stmt = (

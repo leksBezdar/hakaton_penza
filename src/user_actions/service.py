@@ -183,7 +183,7 @@ class UserReviewCRUD:
         await self.db.commit()
         await self.db.refresh(review_update)
 
-        return review.review_rating
+        return review
 
     async def _toggle_review_reaction(self, review: Review, user_id: str, action: str):
         
