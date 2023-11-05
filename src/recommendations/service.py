@@ -59,12 +59,12 @@ class Recommendations:
             raise
         
     @staticmethod
-    async def _get_user_positive_ratings(user_ratings) -> list[int]:
+    async def _get_user_positive_ratings(user_ratings: list) -> list[int]:
         
         return [film_id for film_id, rating in user_ratings if rating >= float(THRESHOLD_FOR_POSITIVE_RATING)]
     
     @staticmethod
-    async def _get_user_negative_ratings(user_ratings) -> list[int]:
+    async def _get_user_negative_ratings(user_ratings: list) -> list[int]:
         
         return [film_id for film_id, rating in user_ratings if rating < float(THRESHOLD_FOR_POSITIVE_RATING)]
     
@@ -89,16 +89,17 @@ class Recommendations:
         
         return user_genres
 
-    async def _get_recommended_film_ids(self, num_films: int, user_id: str):
-        
+    async def _get_recommended_film_ids(self, num_films: int, user_id: str) -> list[int]:
         user_ratings = await self._get_recent_ratings(user_id=user_id)
         user_positive_ratings = await self._get_user_positive_ratings(user_ratings)
 
-            # Получите жанры фильмов, которые пользователь оценил положительно
+        if not user_positive_ratings:
+            # Если пользователь не оценивал фильмы, вернуть 20 случайных фильмов
+            return await self._get_random_related_films(user_id, num_films)
+    
         user_positive_genres = await self._get_user_positive_genres(user_positive_ratings)
         
         # Получите фильмы со схожими жанрами
-        
         for film_id in user_positive_ratings:
             film = await FilmDAO.find_one_or_none(self.db, Film.id == film_id)
             
@@ -126,11 +127,14 @@ class Recommendations:
         all_films = await FilmDAO.find_all(self.db)
                 
         for other_film in all_films:
+            
             if other_film.id != film.id:
                 common_genres = set(other_film.genres) & user_positive_genres
                 similarity = len(common_genres) / len(user_positive_genres)
+                
                 if similarity >= float(SIMILARITY_COEFFICIENT):
                     similar_films.update(other_film.id)
+                    
                     if len(similar_films) >= num_films:
                         break
         
