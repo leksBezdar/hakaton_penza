@@ -10,13 +10,17 @@ router = APIRouter()
 
 
 @router.get("/get_recommendations/")
-async def get_recommendations_route(user_id: str, num_films: int = 20, db: AsyncSession = Depends(get_async_session)):
+async def get_recommendations(
+    user_id: str,
+    num_films: int = 20,
+    num_genres: int = 10,
+    db: AsyncSession = Depends(get_async_session)):
     try:
         
         db_manager = DatabaseManager(db)
         recommendations = db_manager.recommendations
         
-        recommendations = await recommendations.get_recommendations(user_id, num_films)
+        recommendations = await recommendations.get_recommendations(user_id, num_films, num_genres)
         return recommendations
     
     except Exception as e:
