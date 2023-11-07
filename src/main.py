@@ -14,8 +14,7 @@ from src.ai_chat.routers import router as ai_chat_router
 from src.user_actions.routers import router as user_action_router
 from src.api_afisha.api_afisha import router as api_afisha_router
 
-# "/var/log/movie_rank_backend/log.log"
-logger.add(f"C:/project/movie_rank_backend/log.log",
+logger.add(f"/var/log/movie_rank_backend/log.log",
            format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name}:{function}:{line} - {message}",
            encoding="utf-8",
            level="DEBUG",
