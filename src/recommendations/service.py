@@ -11,6 +11,7 @@ from ..user_actions.models import UserFilmRating
 
 from .config import SIMILARITY_COEFFICIENT
 from .config import THRESHOLD_FOR_POSITIVE_RATING
+from .config import NUM_GENRES
 
 class Recommendations:
     
@@ -36,26 +37,8 @@ class Recommendations:
         
         except Exception as e:
             print(f"Error in _get_recent_ratings: {e}")
-            raise
+            raise 
 
-    async def _get_random_related_films(self, user_id: str, count: int) -> List[int]:
-        
-        try:
-            all_films = await FilmDAO.find_all(self.db)
-            
-            user_ratings = await self._get_recent_ratings(user_id=user_id)
-            suitable_films = await self._get_suitable_films(user_ratings, all_films)
-
-            if len(suitable_films) <= count:
-                random_unrelated_films = suitable_films
-            else:
-                random_unrelated_films = sample(suitable_films, count)
-
-            return random_unrelated_films
-        except Exception as e:
-            print(f"Error in _get_random_related_films: {e}")
-            raise
-        
     @staticmethod
     async def _get_user_positive_ratings(user_ratings: list) -> list[int]:
         
@@ -72,83 +55,97 @@ class Recommendations:
         user_negative_ratings = await self._get_user_negative_ratings(user_ratings)
                 
         user_rated_films = user_positive_ratings + user_negative_ratings
-        suitable_films = [film.id for film in all_films if film.id not in user_rated_films]
-        
-        return suitable_films
-    
-    async def _get_most_common_genres(self, user_positive_ratings: list, num_genres: int) -> list[str]:
+        suitable_films = [film for film in all_films if film.id not in user_rated_films]
+
+        return suitable_films  
+
+    async def _get_most_common_genres(self, user_positive_films: list) -> list[str]:
         
         genre_count = {}
-        for film_id in user_positive_ratings:
+        for film_id in user_positive_films:
             film = await FilmDAO.find_one_or_none(self.db, Film.id == film_id)
             for genre in film.genres:
                 genre_count[genre] = genre_count.get(genre, 0) + 1
 
         sorted_genres = sorted(genre_count.keys(), key=lambda genre: genre_count[genre], reverse=True)
         
-        return sorted_genres[:num_genres]
-
-    async def _get_recommended_film_ids(self, num_films: int, user_id: str, num_genres: int) -> list[int]:
-        user_ratings = await self._get_recent_ratings(user_id=user_id)
-        user_positive_ratings = await self._get_user_positive_ratings(user_ratings)
-
-        if not user_positive_ratings:
-            return await self._get_random_related_films(user_id, num_films)
+        return sorted_genres[:int(NUM_GENRES)]
     
-        user_positive_genres = await self._get_most_common_genres(user_positive_ratings, num_genres)
+    async def _get_random_related_films(self, user_id: str, count: int, all_films: list[Film]) -> List[int]:
+        
+        try:
+            
+            user_ratings = await self._get_recent_ratings(user_id=user_id)
+            suitable_films = await self._get_suitable_films(user_ratings, all_films)
+
+            if len(suitable_films) <= count:
+                random_unrelated_films = suitable_films
+            else:
+                random_unrelated_films = sample(suitable_films, count)
+
+            return random_unrelated_films
+        except Exception as e:
+            print(f"Error in _get_random_related_films: {e}")
+            raise   
+
+    async def _get_recommended_film(self, num_films: int, user_id: str, all_films: list[Film]) -> list[int]:
+        
+        user_ratings = await self._get_recent_ratings(user_id=user_id)
+        user_positive_films = await self._get_user_positive_ratings(user_ratings)
+        target_genres = await self._get_most_common_genres(user_positive_films)
+
+        suitable_films = await self._get_suitable_films(user_ratings, all_films)
         
         similar_films = set()
-        for film_id in user_positive_ratings:
-            film = await FilmDAO.find_one_or_none(self.db, Film.id == film_id)
-            
-            similar_films.update(await self._get_similar_films(film, user_positive_genres, num_films))
+        for film in suitable_films:
+                   
+            similar_films.update(await self._get_similar_films(film, target_genres, num_films))
                                     
-        recommendations = list(set(similar_films) - set(user_positive_ratings))
+        if len(similar_films) < num_films:
+            additional_count = num_films - len(similar_films)
+            similar_films = await self._get_additional_films(similar_films, user_id, additional_count)
         
-        if len(recommendations) < num_films:
-            additional_count = num_films - len(recommendations)
-            recommendations = await self._get_additional_films(recommendations, user_id, additional_count)
-        
-        return recommendations
-
+        return similar_films  
+    
     async def _get_additional_films(self, recommendations: list, user_id: str, additional_count: int) -> list:
         
         random_unrelated_films = await self._get_random_related_films(user_id, additional_count)
         recommendations.extend(random_unrelated_films)
         
         return recommendations
-
-    async def _get_similar_films(self, film: Film, user_positive_genres: list, num_films: int) -> set:
+    
+    async def _get_similar_films(self, film: Film, target_genres: list, num_films: int) -> set:
         
         similar_films = set()
-        all_films = await FilmDAO.find_all(self.db)
-                
-        for other_film in all_films:
+        common_genres = set(film.genres) & set(target_genres)
+        similarity = len(common_genres) / len(target_genres)
+
+        if similarity >= float(SIMILARITY_COEFFICIENT):
+
+            similar_films.add(film)
+
+            if len(similar_films) >= num_films:
+                return similar_films
             
-            if other_film.id != film.id:
-                common_genres = set(other_film.genres) & set(user_positive_genres)
-                similarity = len(common_genres) / len(user_positive_genres)
-                if similarity >= float(SIMILARITY_COEFFICIENT):
-                    print(similarity)
-                    similar_films.add(other_film.id)
-                    if len(similar_films) >= num_films:
-                        break
-        print(similar_films)
         return similar_films
 
-    async def get_recommendations(self, user_id: str, num_films: int, num_genres: int) -> List[Film]:
+    async def get_recommendations(self, user_id: str, num_films: int) -> List[Film]:
         try: 
-            recommendations = await self._get_recommended_film_ids(num_films, user_id, num_genres)
-            recommended_films = [await FilmDAO.find_one_or_none(self.db, Film.id == film_id) for film_id in recommendations]
-
-            return recommended_films
+            print(1)
+            all_films = await FilmDAO.find_all(self.db)
+            recommendations = await self._get_recommended_film(num_films, user_id, all_films)
+            print(2)
+            return recommendations
         
         except Exception as e:
             print(f"Error in get_recommendations: {e}")
             raise
+
 
 class DatabaseManager:
     
     def __init__(self, db: AsyncSession):
         self.db = db
         self.recommendations = Recommendations(db)
+    
+
