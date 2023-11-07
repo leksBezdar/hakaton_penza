@@ -1,5 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from .dao import UserFilmRatingDAO
+from .models import UserFilmRating
+
+from . import schemas
+from . import exceptions
+
 from ..reviews.dao import ReviewDAO
 from ..reviews.models import Review
 
@@ -12,11 +18,6 @@ from ..films.dao import FilmDAO
 
 from ..utils import check_record_existence
 
-from .dao import UserFilmRatingDAO
-from .models import UserFilmRating
-
-from . import schemas
-from . import exceptions
 
 
 class UserFilmCRUD:

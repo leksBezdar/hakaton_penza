@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from . import schemas
 from .dao import CommentDAO
 from .models import Comment
 
@@ -8,7 +9,6 @@ from ..auth.service import DatabaseManager as AuthManager
 from ..films.models import Film
 from ..reviews.models import Review
 
-from . import schemas
 
 
 class CommentCRUD:

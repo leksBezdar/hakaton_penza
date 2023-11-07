@@ -1,16 +1,15 @@
-from fastapi.responses import JSONResponse
 import jwt
 
 from uuid import uuid4
-
 from datetime import datetime, timedelta, timezone
 
-from fastapi import Request, Response
-from sqlalchemy import or_, update
+from fastapi import Response
+from fastapi.responses import JSONResponse
+
+from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from . import models, exceptions, schemas, utils
-
 from .config import (
     TOKEN_SECRET_KEY,
     ALGORITHM,
@@ -19,6 +18,7 @@ from .config import (
 )
 from .dao import RefreshTokenDAO, UserDAO
 from .models import Refresh_token, User
+
 
 
 class UserCRUD:

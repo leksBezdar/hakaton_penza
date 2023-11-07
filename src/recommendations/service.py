@@ -3,13 +3,13 @@ from sqlalchemy import select
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..films.dao import FilmDAO
-from ..films.models import Film
-from ..user_actions.models import UserFilmRating
-
 from .config import SIMILARITY_COEFFICIENT
 from .config import THRESHOLD_FOR_POSITIVE_RATING
 from .config import NUM_GENRES
+
+from ..films.dao import FilmDAO
+from ..films.models import Film
+from ..user_actions.models import UserFilmRating
 
 class Recommendations:
     """

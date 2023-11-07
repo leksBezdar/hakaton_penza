@@ -1,17 +1,8 @@
-
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import func, or_, select
-
-from ..auth.models import User
-from ..auth.dao import UserDAO
-from ..auth.service import DatabaseManager as AuthManager
-
-from ..utils import check_record_existence
+from sqlalchemy import or_
 
 from .dao import FilmDAO
 from .models import Film
-
-
 
 from . import schemas
 from . import exceptions

@@ -2,10 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..database import get_async_session
 from .service import DatabaseManager
 
-from time import perf_counter
+from ..database import get_async_session
 
 
 router = APIRouter()

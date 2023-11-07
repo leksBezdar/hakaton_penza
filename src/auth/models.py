@@ -1,13 +1,12 @@
 from datetime import datetime
-from typing import Annotated, Any
+from typing import Annotated
 
-from sqlalchemy import TIMESTAMP, Integer, Boolean, ForeignKey, JSON, String, Text
-from sqlalchemy.orm import  Mapped, mapped_column, relationship
+from sqlalchemy import TIMESTAMP, Boolean, ForeignKey, JSON, String
+from sqlalchemy.orm import  Mapped, mapped_column
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import ARRAY
 
 
-from ..films.models import Film
 from ..database import Base
 
 user_list = Annotated[list, mapped_column(ARRAY(JSON), nullable=False, default=[])]
