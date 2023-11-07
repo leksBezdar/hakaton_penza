@@ -60,7 +60,7 @@ class Recommendations:
             print(f"Error in _get_recent_ratings: {e}")
             raise 
 
-    async def _get_user_positive_ratings(self, user_ratings: list) -> tuple[int]:
+    async def _get_user_high_rated_films(self, user_ratings: list) -> tuple[int]:
         
         """
         Возвращает список фильмов, оцененных пользователем положительно.
@@ -78,7 +78,7 @@ class Recommendations:
         self.user_positive_ratings = tuple([film_id for film_id, rating in user_ratings if rating >= float(THRESHOLD_FOR_POSITIVE_RATING)])
         return self.user_positive_ratings
 
-    async def _get_user_negative_ratings(self, user_ratings: list) -> tuple[int]:
+    async def _get_user_low_rated_films(self, user_ratings: list) -> tuple[int]:
         
         """
         Возвращает список фильмов, оцененных пользователем отрицательно.
@@ -111,10 +111,10 @@ class Recommendations:
         
         try:
             
-            user_positive_ratings = await self._get_user_positive_ratings(user_ratings)
-            user_negative_ratings = await self._get_user_negative_ratings(user_ratings)
+            user_high_rated_films = await self._get_user_high_rated_films(user_ratings)
+            user_low_rated_films = await self._get_user_low_rated_films(user_ratings)
 
-            user_rated_films = user_positive_ratings + user_negative_ratings
+            user_rated_films = user_high_rated_films + user_low_rated_films
             suitable_films = tuple([film for film in all_films if film.id not in user_rated_films])
             
             return suitable_films
@@ -201,8 +201,8 @@ class Recommendations:
         
         try:
         
-            user_positive_films = await self._get_user_positive_ratings(user_ratings)
-            target_genres = await self._get_most_common_genres(user_positive_films, all_films)
+            user_high_rated_films = await self._get_user_high_rated_films(user_ratings)
+            target_genres = await self._get_most_common_genres(user_high_rated_films, all_films)
 
             suitable_films = await self._get_suitable_films(user_ratings, all_films)
 
@@ -286,7 +286,7 @@ class Recommendations:
             
             all_films = tuple(await FilmDAO.find_all(self.db))
             user_ratings = await self._get_recent_ratings(user_id=user_id)     
-            recommendations = await self._get_recommended_film(num_films, all_films, user_id, user_ratings)
+            recommendations = await self._get_recommended_films(num_films, all_films, user_id, user_ratings)
             
             return recommendations
         
