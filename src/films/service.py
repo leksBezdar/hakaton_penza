@@ -67,6 +67,7 @@ class FilmCRUD:
         return film
 
     async def get_all_films(self, *filter, offset: int = 0, limit: int = 100, **filter_by) -> list[Film]:
+        logger.info("Получаю все фильмы")
         """
         Получает список фильмов с возможностью фильтрации и пагинации.
 
@@ -81,6 +82,7 @@ class FilmCRUD:
 
         """
         films = await FilmDAO.find_all(self.db, *filter, offset=offset, limit=limit, **filter_by)
+        logger.debug(f"Все фильмы: {films}")
 
         return films
 

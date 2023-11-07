@@ -47,9 +47,9 @@ class CommentCRUD:
     
 
     async def get_all_comments(self, *filter, offset: int = 0, limit: int = 100, **filter_by) -> list[Comment]:
-        logger.info("Получаю список всех фильмов")
+        logger.info("Получаю список все коментаррии фильма")
         comments = await CommentDAO.find_all(self.db, *filter, offset=offset, limit=limit, **filter_by)
-        logger.debug(f"Список всех фильмов: {comments}")
+        logger.debug(f"Все комменты фильма: {comments}")
         return comments
 
     async def update_comment(self, comment_id: int, comment_in: schemas.CommentUpdate):
