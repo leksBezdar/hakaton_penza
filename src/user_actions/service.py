@@ -164,6 +164,22 @@ class UserFilmCRUD:
         ratings = [film.rating for film in films]
         
         return sum(ratings) / len(ratings)
+    
+    
+    async def get_ratings_for_film(self, film_id: int) -> list:
+        
+        await check_record_existence(self.db, Film, film_id)
+        
+        ratings = await UserFilmRatingDAO.find_all(self.db, UserFilmRating.film_id == film_id)
+        
+        rating_dict = {}
+        
+        for rating in ratings:
+            user_id = rating.user_id
+            rating_value = rating.rating
+            rating_dict[user_id] = rating_value
+        
+        return rating_dict
 
 
 class UserReviewCRUD:
