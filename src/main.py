@@ -3,6 +3,7 @@ import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
+from loguru import logger
 
 from src.auth.routers import router as auth_router
 from src.recommendations.routers import router as recommendations_router
@@ -12,6 +13,13 @@ from src.comments.routers import router as comments_router
 from src.ai_chat.routers import router as ai_chat_router
 from src.user_actions.routers import router as user_action_router
 from src.api_afisha.api_afisha import router as api_afisha_router
+
+# "/var/log/movie_rank_backend/log.log"
+logger.add(f"C:/project/movie_rank_backend/log.log",
+           format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name}:{function}:{line} - {message}",
+           encoding="utf-8",
+           level="DEBUG",
+           rotation="100 MB")
 
 
 app = FastAPI(

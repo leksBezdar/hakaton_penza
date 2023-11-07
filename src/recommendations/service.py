@@ -2,6 +2,8 @@ from typing import List
 from random import sample
 from sqlalchemy import select
 
+from loguru import logger
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -35,7 +37,7 @@ class Recommendations:
             return user_ratings
         
         except Exception as e:
-            print(f"Error in _get_recent_ratings: {e}")
+            logger.opt(exception=e).critical("Error in _get_recent_ratings")
             raise
 
     async def _get_random_related_films(self, user_id: str, count: int) -> List[int]:
@@ -53,7 +55,7 @@ class Recommendations:
 
             return random_unrelated_films
         except Exception as e:
-            print(f"Error in _get_random_related_films: {e}")
+            logger.opt(exception=e).critical("Error in _get_random_related_films")
             raise
         
     @staticmethod
@@ -144,7 +146,7 @@ class Recommendations:
             return recommended_films
         
         except Exception as e:
-            print(f"Error in get_recommendations: {e}")
+            logger.opt(exception=e).critical("Error in get_recommendations")
             raise
 
 class DatabaseManager:
