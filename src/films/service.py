@@ -1,4 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from loguru import logger
 from sqlalchemy import or_
 
 from .dao import FilmDAO
@@ -31,7 +33,8 @@ class FilmCRUD:
                 **film.model_dump(),
             )
         )
-
+        
+        logger.debug(f"Создаю фильм: {film}")
         self.db.add(db_film)
         await self.db.commit()
         await self.db.refresh(db_film)
@@ -50,11 +53,13 @@ class FilmCRUD:
             Optional[Film]: Запись о фильме, если найдена, в противном случае None.
 
         """
+        logger.debug(f"Пытаюсь найти фильм с film_id: {film_id}")
         film = await FilmDAO.find_one_or_none(self.db, Film.id == film_id)
 
         return film
 
     async def get_all_films(self, *filter, offset: int = 0, limit: int = 100, **filter_by) -> list[Film]:
+        logger.info("Получаю все фильмы")
         """
         Получает список фильмов с возможностью фильтрации и пагинации.
 
@@ -69,6 +74,7 @@ class FilmCRUD:
 
         """
         films = await FilmDAO.find_all(self.db, *filter, offset=offset, limit=limit, **filter_by)
+        logger.debug(f"Все фильмы: {films}")
 
         return films
 
@@ -84,7 +90,7 @@ class FilmCRUD:
             Film: Обновленная запись о фильме.
 
         """
-
+        logger.debug(f"Обновляю информацию. Film_id: {film_id} на {film_in}")
         film_update = await FilmDAO.update(
             self.db,
             Film.id == film_id,
@@ -103,6 +109,7 @@ class FilmCRUD:
             film_id (int, optional): Идентификатор фильма для удаления.
 
         """
+        logger.debug(f"Удаляю фильм film_title: {film_title} | film_id: {film_id}")
         await FilmDAO.delete(self.db, or_(
             film_id == Film.id,
             film_title == Film.title))
@@ -127,7 +134,6 @@ class DatabaseManager:
 
     Args:
         db (AsyncSession): Сессия базы данных SQLAlchemy.
-
     """
 
     def __init__(self, db: AsyncSession):

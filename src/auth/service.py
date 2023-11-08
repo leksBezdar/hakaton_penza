@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 
 from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
+from loguru import logger
 
 from . import models, exceptions, schemas, utils
 from .config import (
@@ -253,10 +254,12 @@ class TokenCrud:
             user_id = payload.get("sub")
             return user_id
 
-        except jwt.ExpiredSignatureError:
+        except jwt.ExpiredSignatureError as e:
+            logger.opt(exceptions=e).critical("Error in get_access_token_payload")
             raise exceptions.TokenExpired
 
         except jwt.DecodeError:
+            logger.opt(exceptions=e).critical("Error in get_access_token_payload")
             raise exceptions.InvalidToken
 
     async def refresh_token(self, token: str, response: Response) -> schemas.Token:

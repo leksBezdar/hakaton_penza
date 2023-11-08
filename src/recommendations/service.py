@@ -1,6 +1,8 @@
 from random import sample
 from sqlalchemy import select
 
+from loguru import logger
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .config import SIMILARITY_COEFFICIENT
@@ -57,8 +59,8 @@ class Recommendations:
             return user_ratings
         
         except Exception as e:
-            print(f"Error in _get_recent_ratings: {e}")
-            raise 
+            logger.opt(exception=e).critical("Error in _get_recent_ratings")
+            raise
 
     async def _get_user_high_rated_films(self, user_ratings: list) -> tuple[int]:
         
@@ -177,71 +179,61 @@ class Recommendations:
             return random_unrelated_films
         
         except Exception as e:
-            print(f"Error in _get_random_related_films: {e}")
-            raise   
-
-    async def _get_recommended_films(self,
-        num_films: int,
-        all_films: tuple[Film],
-        user_id: str,
-        user_ratings: list) -> set[Film]:
+            logger.opt(exception=e).critical("Error in _get_random_related_films")
+            raise
         
-        """
-        Генерирует рекомендации фильмов для пользователя.
-
-        Args:
-            num_films (int): Количество фильмов для рекомендации.
-            all_films (tuple[Film]): Все фильмы в базе данных.
-            user_id (str): Идентификатор пользователя.
-            user_ratings (list): Список кортежей с оценками пользователя(film_id, rating).
-
-        Returns:
-            set[int]: Множество идентификаторов рекомендованных фильмов.
-        """
+    @staticmethod
+    async def _get_user_positive_ratings(user_ratings: list) -> list[int]:
         
-        try:
-        
-            user_high_rated_films = await self._get_user_high_rated_films(user_ratings)
-            target_genres = await self._get_most_common_genres(user_high_rated_films, all_films)
-
-            suitable_films = await self._get_suitable_films(user_ratings, all_films)
-
-            similar_films = set()
-            for film in suitable_films:
-
-                if len(similar_films) >= num_films:
-                    break
-                
-                similar_films.add(await self._get_similar_film(film, target_genres))
-
-            if len(similar_films) < num_films:
-                additional_count = num_films - len(similar_films)
-                similar_films = await self._get_additional_films(similar_films, user_id, additional_count, user_ratings)
-                
-            return similar_films  
-        
-        except Exception as e:
-            print(f"Error in _get_recommended_film: {e}")
-            raise 
-            
+        return [film_id for film_id, rating in user_ratings if rating >= float(THRESHOLD_FOR_POSITIVE_RATING)]
     
-    async def _get_additional_films(self, recommendations: set, user_id: str, additional_count: int, user_ratings: list) -> set:
+    @staticmethod
+    async def _get_user_negative_ratings(user_ratings: list) -> list[int]:
         
-        """
-        Добавляет дополнительные случайные фильмы к списку рекомендаций.
-
-        Args:
-            recommendations (set): Множество рекомендованных фильмов.
-            user_id (str): Идентификатор пользователя.
-            additional_count (int): Количество дополнительных фильмов для рекомендации.
-            user_ratings (list): Список кортежей с оценками пользователя(film_id, rating).
-
-        Returns:
-            set: Обновленное множество рекомендаций с добавленными случайными фильмами.
-        """
+        return [film_id for film_id, rating in user_ratings if rating < float(THRESHOLD_FOR_POSITIVE_RATING)]
+    
+    async def _get_suitable_films(self, user_ratings: list, all_films: list[Film]) -> list[int]:
+            
+        user_positive_ratings = await self._get_user_positive_ratings(user_ratings)
+        user_negative_ratings = await self._get_user_negative_ratings(user_ratings)
+                
+        user_rated_films = user_positive_ratings + user_negative_ratings
+        suitable_films = [film.id for film in all_films if film.id not in user_rated_films]
         
-        random_related_films = await self._get_random_related_films(user_id, additional_count, user_ratings)
-        recommendations.add(random_related_films)
+        return suitable_films
+    
+    async def _get_most_common_genres(self, user_positive_ratings: list, num_genres: int) -> list[str]:
+        
+        genre_count = {}
+        for film_id in user_positive_ratings:
+            film = await FilmDAO.find_one_or_none(self.db, Film.id == film_id)
+            for genre in film.genres:
+                genre_count[genre] = genre_count.get(genre, 0) + 1
+
+        sorted_genres = sorted(genre_count.keys(), key=lambda genre: genre_count[genre], reverse=True)
+        
+        return sorted_genres[:num_genres]
+
+    async def _get_recommended_film_ids(self, num_films: int, user_id: str, num_genres: int) -> list[int]:
+        user_ratings = await self._get_recent_ratings(user_id=user_id)
+        user_positive_ratings = await self._get_user_positive_ratings(user_ratings)
+
+        if not user_positive_ratings:
+            return await self._get_random_related_films(user_id, num_films)
+    
+        user_positive_genres = await self._get_most_common_genres(user_positive_ratings, num_genres)
+        
+        similar_films = set()
+        for film_id in user_positive_ratings:
+            film = await FilmDAO.find_one_or_none(self.db, Film.id == film_id)
+            
+            similar_films.update(await self._get_similar_films(film, user_positive_genres, num_films))
+                                    
+        recommendations = list(set(similar_films) - set(user_positive_ratings))
+        
+        if len(recommendations) < num_films:
+            additional_count = num_films - len(recommendations)
+            recommendations = await self._get_additional_films(recommendations, user_id, additional_count)
         
         return recommendations
     
@@ -291,7 +283,7 @@ class Recommendations:
             return recommendations
         
         except Exception as e:
-            print(f"Error in get_recommendations: {e}")
+            logger.opt(exception=e).critical("Error in get_recommendations")
             raise
 
 
