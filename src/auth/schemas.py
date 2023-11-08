@@ -1,5 +1,3 @@
-import re
-
 from pydantic import BaseModel, EmailStr, Field, validator
 from typing import List
 

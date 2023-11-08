@@ -50,3 +50,15 @@ async def rate_review(
     user_review_crud = db_manager.user_review_crud
 
     return await user_review_crud.rate_the_review(user_id, review_id, action)
+
+
+@router.get("/get_ratings_for_film")
+async def get_ratings_for_film(
+    film_id: int,
+    db: AsyncSession = Depends(get_async_session)
+):
+
+    db_manager = DatabaseManager(db)
+    user_film_crud = db_manager.user_film_crud
+    
+    return await user_film_crud.get_ratings_for_film(film_id)
