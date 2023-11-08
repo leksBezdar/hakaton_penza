@@ -3,6 +3,7 @@ from datetime import datetime
 
 import aiohttp
 from fastapi import APIRouter
+from fastapi.responses import RedirectResponse
 from loguru import logger
 
 from ..config import *
@@ -16,23 +17,8 @@ router =  APIRouter(
 
 @router.get("/get_all_cities/")
 async def get_all_cities() -> dict:
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
-        params = {"api_key": API_KEY}
-        url = urljoin(BASE_URL, "cities")
-
-        async with session.get(url=url, params=params) as resp:
-            logger.debug(f"response: {resp}")
-            cities = await resp.json()
-            return {"msg" : "ok", "data" : await convert_cities_to_normal_type(cities)}
-
+    return RedirectResponse("http://213.171.9.36/api_kinoafisha/get_all_cities/")
 
 @router.get("/get_schedule_events/")
 async def get_schedule_events(city: str,  date_end: datetime="") -> dict:
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
-        url = urljoin(BASE_URL, "schedule")
-        params = {"api_key": API_KEY, "city": city, "date_end": date_end}
-        
-        async with session.get(url=url, params=params) as response:
-            logger.debug(f"response: {response}")
-            logger.debug(f"response: {response.text()}")
-            return {"msg": "ok", "data": await response.json()}
+    return RedirectResponse(f"http://213.171.9.36/api_kinoafisha/get_schedule_events/?city={city}&date_end={date_end}")
