@@ -10,7 +10,6 @@ from src.recommendations.routers import router as recommendations_router
 from src.films.routers import router as films_router
 from src.reviews.routers import router as reviews_router
 from src.comments.routers import router as comments_router
-from src.ai_chat.routers import router as ai_chat_router
 from src.user_actions.routers import router as user_action_router
 from src.api_afisha.api_afisha import router as api_afisha_router
 
@@ -30,7 +29,6 @@ app.include_router(auth_router, tags=["Registration"])
 app.include_router(films_router, tags=["Films"])
 app.include_router(reviews_router, tags=["Reviews"])
 app.include_router(comments_router, tags=["Comments"])
-app.include_router(ai_chat_router, tags=["AI_router"])
 app.include_router(recommendations_router, tags=["Recommendations_router"])
 app.include_router(user_action_router, tags=["user_actions"])
 app.include_router(api_afisha_router)
