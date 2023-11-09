@@ -148,7 +148,7 @@ class Recommendations:
 
             sorted_genres = sorted(genre_count.keys(), key=lambda genre: genre_count[genre], reverse=True)
 
-            return sorted_genres[:int(NUM_GENRES)]
+            return sorted_genres[:int(NUM_GENRES)+1]
         except Exception as e:
             print(f"Error in _get_most_common_genres: {e}")
             raise 
@@ -214,7 +214,10 @@ class Recommendations:
                 if len(similar_films) >= num_films:
                     break
                 
-                similar_films.add(await self._get_similar_film(film, target_genres))
+                is_similar = await self._get_similar_film(film, target_genres)
+                if is_similar:
+                    similar_films.add(is_similar)
+                    
 
             if len(similar_films) < num_films:
                 additional_count = num_films - len(similar_films)
@@ -241,7 +244,7 @@ class Recommendations:
         Returns:
             set: Обновленное множество рекомендаций с добавленными случайными фильмами.
         """
-        
+
         random_related_films = await self._get_random_related_films(user_id, additional_count, user_ratings)
         recommendations.add(random_related_films)
         
@@ -289,6 +292,7 @@ class Recommendations:
             all_films = tuple(await FilmDAO.find_all(self.db))
             user_ratings = await self._get_recent_ratings(user_id=user_id)     
             recommendations = await self._get_recommended_films(num_films, all_films, user_id, user_ratings)
+            print(recommendations)
             
             return recommendations
         
