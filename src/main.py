@@ -12,6 +12,7 @@ from src.reviews.routers import router as reviews_router
 from src.comments.routers import router as comments_router
 from src.user_actions.routers import router as user_action_router
 from src.api_afisha.api_afisha import router as api_afisha_router
+from src.gigachat.router import router as ai_gigachat_router
 
 logger.add(f"/var/log/movie_rank_backend/log.log",
            format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name}:{function}:{line} - {message}",
@@ -32,6 +33,7 @@ app.include_router(comments_router, tags=["Comments"])
 app.include_router(recommendations_router, tags=["Recommendations_router"])
 app.include_router(user_action_router, tags=["user_actions"])
 app.include_router(api_afisha_router)
+app.include_router(ai_gigachat_router)
 
 
 origins = [
