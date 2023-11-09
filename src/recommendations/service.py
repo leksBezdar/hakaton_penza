@@ -292,7 +292,6 @@ class Recommendations:
             all_films = tuple(await FilmDAO.find_all(self.db))
             user_ratings = await self._get_recent_ratings(user_id=user_id)     
             recommendations = await self._get_recommended_films(num_films, all_films, user_id, user_ratings)
-            print(recommendations)
             
             return recommendations
         
