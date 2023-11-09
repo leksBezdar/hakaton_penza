@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from .service import GigaChatLogic
+from .scheme import ContentModel
 
 
 router = APIRouter(
@@ -22,3 +23,8 @@ async def get_models():
 async def get_information_about_model(model: str):
     gigachat = GigaChatLogic()
     return await  gigachat._get_information_about_model(model)
+
+@router.post("/create_prompt/")
+async def create_promtp(content: str): 
+    gigachat = GigaChatLogic()
+    return await gigachat._create_prompt(content)
