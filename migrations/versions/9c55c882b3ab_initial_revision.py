@@ -97,22 +97,19 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['username'], ['users.username'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['film_id'], ['films.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
-    
     )
+    
     op.create_table('comments',
-        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('id', sa.String(), nullable=False),
         sa.Column('user_id', sa.String(), nullable=False),
         sa.Column('film_id', sa.Integer(), nullable=True),
         sa.Column('username', sa.String(), nullable=False),
         sa.Column('message', sa.String(), nullable=False),
-        sa.Column('parent_comment_id', sa.Integer(), nullable=True),
-        sa.Column('parent_review_id', sa.Integer(), nullable=True),
         sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.ForeignKeyConstraint(['parent_comment_id'], ['comments.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['username'], ['users.username'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['film_id'], ['films.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
     )
     
     op.create_table('user_film_ratings',
@@ -125,6 +122,17 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
 
+    op.create_table('reply_comments',
+        sa.Column('id', sa.String(), nullable=False),
+        sa.Column('comment_id', sa.String(), nullable=False),
+        sa.Column('parent_comment_id', sa.String(), nullable=True),
+        sa.Column('parent_review_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['comment_id'], ['comments.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['parent_comment_id'], ['comments.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['parent_review_id'], ['reviews.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
+
     # ### end Alembic commands ###
 
 
@@ -134,6 +142,7 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_refresh_tokens_id'), table_name='refresh_tokens')
     op.drop_table('refresh_tokens')
     op.drop_index(op.f('ix_users_id'), table_name='users')
+    op.drop_table('reply_comments')
     op.drop_table('reviews')
     op.drop_table('comments')
     op.drop_table('user_film_ratings')
