@@ -16,25 +16,24 @@ router =  APIRouter(
     tags=["Kinoafisha"]
 )
 
+
 @router.get("/get_all_cities/")
 async def get_all_cities() -> dict:
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
-        params = {"api_key": API_KEY}
-        url = urljoin(BASE_URL, "cities")
+        url = "http://213.171.9.36/api_kinoafisha/get_all_cities/"
 
-        async with session.get(url=url, params=params) as resp:
+        async with session.get(url=url) as resp:
             logger.debug(f"response: {resp}")
-            cities = await resp.json()
-            return {"msg" : "ok", "data" : await convert_cities_to_normal_type(cities)}
+            return {"msg" : "ok", "data" : await resp.json()}
 
 
 @router.get("/get_schedule_events/")
-async def get_schedule_events(city: str,  date_end: datetime="") -> dict:
+async def get_schedule_events(city: str) -> dict:
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
-        url = urljoin(BASE_URL, "schedule")
-        params = {"api_key": API_KEY, "city": city, "date_end": date_end}
+        url = "http://213.171.9.36/api_kinoafisha/get_schedule_events/"
+        params = {"city": city}
         
         async with session.get(url=url, params=params) as response:
             logger.debug(f"response: {response}")
-            logger.debug(f"response: {response.text()}")
+            logger.debug(f"response: {await response.json()}")
             return {"msg": "ok", "data": await response.json()}
