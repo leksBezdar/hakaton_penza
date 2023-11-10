@@ -18,20 +18,24 @@ router = APIRouter()
 async def create_comment(
     token: str,
     comment_data: schemas.CommentCreate,
+    parent_comment_id: str = None,
+    parent_review_id: int = None,
     db: AsyncSession = Depends(get_async_session),
 ) -> Comment:
 
-    print(10)
     db_manager = DatabaseManager(db)
     comment_crud = db_manager.comment_crud
-
-    return await comment_crud.create_comment(token=token, comment=comment_data)
+    
+    return await comment_crud.create_comment(
+        token=token, comment=comment_data,
+        parent_comment_id=parent_comment_id,
+        parent_review_id=parent_review_id
+        )
 
 
 @router.get("/get_all_comments")
 async def get_all_comments(
     film_id: int = None,
-    review_id: int = None,
     offset: int = 0,
     limit: int = 10,
     db: AsyncSession = Depends(get_async_session),
@@ -39,12 +43,12 @@ async def get_all_comments(
     db_manager = DatabaseManager(db)
     comment_crud = db_manager.comment_crud
 
-    return await comment_crud.get_all_comments(film_id=film_id, parent_review_id=review_id, offset=offset, limit=limit)
+    return await comment_crud.get_all_comments(film_id=film_id, offset=offset, limit=limit)
 
 
 @router.patch("/update_comment", response_model=schemas.CommentUpdate)
 async def update_comment(
-    comment_id: int,
+    comment_id: str,
     comment_data: schemas.CommentUpdate,
     db: AsyncSession = Depends(get_async_session),
 ):
@@ -57,8 +61,9 @@ async def update_comment(
 
 @router.delete("/delete_comment")
 async def delete_comment(
-        comment_id: int = None,
-        db: AsyncSession = Depends(get_async_session)):
+    comment_id: str = None,
+    db: AsyncSession = Depends(get_async_session)
+):
 
     db_manager = DatabaseManager(db)
     comment_crud = db_manager.comment_crud
@@ -70,3 +75,22 @@ async def delete_comment(
     })
 
     return response
+
+@router.get("/get_all_replies")
+async def get_all_replies(
+    parent_review_id: int = None,
+    parent_comment_id: str = None,
+    offset: int = 0,
+    limit: int = 10,
+    db: AsyncSession = Depends(get_async_session)
+):
+    
+    db_manager = DatabaseManager(db)
+    comment_crud = db_manager.comment_crud
+    
+    replies = await comment_crud.get_all_replies(
+        parent_review_id=parent_review_id,
+        parent_comment_id=parent_comment_id,
+        offset=offset, limit=limit)
+    
+    return replies
