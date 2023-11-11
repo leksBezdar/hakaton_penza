@@ -29,8 +29,8 @@ class Recommendations:
     
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
-        self.user_positive_ratings = None
-        self.user_negative_ratings = None
+        self.user_high_rated_films = None
+        self.user_low_rated_films = None
 
     async def _get_recent_ratings(self, user_id: str, limit: int = 20) -> list[tuple[int, float]]:
         
@@ -74,11 +74,11 @@ class Recommendations:
             tuple[int]: Кортеж идентификаторов фильмов, оцененных положительно.
         """
         
-        if self.user_positive_ratings:
-            return self.user_positive_ratings
+        if self.user_high_rated_films:
+            return self.user_high_rated_films
         
-        self.user_positive_ratings = tuple([film_id for film_id, rating in user_ratings if rating >= float(THRESHOLD_FOR_POSITIVE_RATING)])
-        return self.user_positive_ratings
+        self.user_high_rated_films = tuple([film_id for film_id, rating in user_ratings if rating >= float(THRESHOLD_FOR_POSITIVE_RATING)])
+        return self.user_high_rated_films
 
     async def _get_user_low_rated_films(self, user_ratings: list) -> tuple[int]:
         
@@ -92,11 +92,11 @@ class Recommendations:
             tuple[int]: Кортеж идентификаторов фильмов, оцененных положительно.
         """
         
-        if self.user_negative_ratings:
-            return self.user_negative_ratings
+        if self.user_low_rated_films:
+            return self.user_low_rated_films
         
-        self.user_negative_ratings = tuple([film_id for film_id, rating in user_ratings if rating < float(THRESHOLD_FOR_POSITIVE_RATING)])
-        return self.user_negative_ratings
+        self.user_low_rated_films = tuple([film_id for film_id, rating in user_ratings if rating < float(THRESHOLD_FOR_POSITIVE_RATING)])
+        return self.user_low_rated_films
     
     async def _get_suitable_films(self, user_ratings: list, all_films: tuple[Film]) -> tuple[int]:
         
@@ -153,14 +153,14 @@ class Recommendations:
             print(f"Error in _get_most_common_genres: {e}")
             raise 
     
-    async def _get_random_related_films(self, count: int, all_films: tuple[Film], user_ratings: list) -> list[int]:
+    async def _get_random_related_films(self, num_additional_films: int, all_films: tuple[Film], user_ratings: list) -> list[int]:
         
         """
         Возвращает случайные фильмы, которые связаны с предпочтениями пользователя.
         Вызывается в случае недостатка наиболее схожих фильмов.
 
         Args:
-            count (int): Количество недостающих фильмов для рекомендации.
+            num_additional_films (int): Количество недостающих фильмов для рекомендации.
             all_films (tuple[Film]): Все фильмы в базе данных.
             user_ratings (list): Список кортежей с оценками пользователя(film_id, rating).
 
@@ -171,12 +171,12 @@ class Recommendations:
         try:
             suitable_films = await self._get_suitable_films(user_ratings, all_films)
 
-            if len(suitable_films) <= count:
-                random_unrelated_films = suitable_films
+            if len(suitable_films) <= num_additional_films:
+                random_related_films = suitable_films
             else:
-                random_unrelated_films = sample(suitable_films, count)
+                random_related_films = sample(suitable_films, num_additional_films)
 
-            return random_unrelated_films
+            return random_related_films
         
         except Exception as e:
             logger.opt(exception=e).critical("Error in _get_random_related_films")
@@ -220,8 +220,8 @@ class Recommendations:
                     
 
             if len(similar_films) < num_films:
-                additional_count = num_films - len(similar_films)
-                similar_films = await self._get_additional_films(similar_films, user_id, additional_count, user_ratings)
+                num_additional_films = num_films - len(similar_films)
+                similar_films = await self._get_additional_films(similar_films, user_id, num_additional_films, user_ratings)
                 
             return similar_films  
         
@@ -230,25 +230,25 @@ class Recommendations:
             raise 
             
     
-    async def _get_additional_films(self, recommendations: set, user_id: str, additional_count: int, user_ratings: list) -> set:
+    async def _get_additional_films(self, similar_films: set, user_id: str, num_additional_films: int, user_ratings: list) -> set:
         
         """
         Добавляет дополнительные случайные фильмы к списку рекомендаций.
 
         Args:
-            recommendations (set): Множество рекомендованных фильмов.
+            similar_films (set): Множество рекомендованных фильмов.
             user_id (str): Идентификатор пользователя.
-            additional_count (int): Количество дополнительных фильмов для рекомендации.
+            num_additional_films (int): Количество дополнительных фильмов для рекомендации.
             user_ratings (list): Список кортежей с оценками пользователя(film_id, rating).
 
         Returns:
             set: Обновленное множество рекомендаций с добавленными случайными фильмами.
         """
 
-        random_related_films = await self._get_random_related_films(user_id, additional_count, user_ratings)
-        recommendations.add(random_related_films)
+        additional_films = await self._get_random_related_films(user_id, num_additional_films, user_ratings)
+        similar_films.add(additional_films)
         
-        return recommendations
+        return similar_films
     
     async def _get_similar_film(self, film: Film, target_genres: list) -> Film | None:
         
