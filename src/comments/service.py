@@ -28,10 +28,11 @@ class CommentCRUD:
             await check_record_existence(self.db, Film, comment.film_id)     
         
         logger.debug(f"Создаю комментарий: {comment}")
-        auth_manager = AuthManager(self.db)
-        user_crud = auth_manager.user_crud
         
+        auth_manager = AuthManager(self.db)
+        user_crud = auth_manager.user_crud       
         user = await user_crud.get_user_by_access_token(access_token=token)
+        
         db_comment = await CommentDAO.add(
             self.db,
             schemas.CommentCreateDB(
@@ -41,18 +42,13 @@ class CommentCRUD:
                 username=user.username,
             )
         )
+        
         self.db.add(db_comment)
         await self.db.commit()
         await self.db.refresh(db_comment)
-        
-        if parent_comment_id or parent_review_id: 
-            reply_data = schemas.ReplyCommentData(
-                comment_id=comment_id,
-                parent_comment_id=parent_comment_id,
-                parent_review_id=parent_review_id
-            )
-            await self._create_reply_comment(reply_data)
 
+        await self._check_if_is_reply(parent_comment_id, parent_review_id, comment_id)
+        
         return db_comment
     
     async def _create_reply_comment(self, reply_data: schemas.ReplyCommentData):
@@ -74,6 +70,16 @@ class CommentCRUD:
 
         return db_reply
     
+    async def _check_if_is_reply(self, parent_comment_id: str, parent_review_id: int, comment_id: str):
+                
+        if parent_comment_id or parent_review_id: 
+            reply_data = schemas.ReplyCommentData(
+                comment_id=comment_id,
+                parent_comment_id=parent_comment_id,
+                parent_review_id=parent_review_id
+            )
+            await self._create_reply_comment(reply_data)
+    
     async def get_all_replies(self, *filter, offset: int = 0, limit: int = 100, **filter_by):
 
         replies = await ReplyCommentDAO.find_all(self.db, *filter, offset=offset, limit=limit, **filter_by)
@@ -82,12 +88,15 @@ class CommentCRUD:
 
 
     async def get_all_comments(self, *filter, offset: int = 0, limit: int = 100, **filter_by) -> list[Comment]:
+        
         logger.info("Получаю список все коментаррии фильма")
         comments = await CommentDAO.find_all(self.db, *filter, offset=offset, limit=limit, **filter_by)
         logger.debug(f"Все комменты фильма: {comments}")
+        
         return comments
 
     async def update_comment(self, comment_id: str, comment_in: schemas.CommentUpdate):
+        
         logger.debug(f"Обновляю comment_id: {comment_id} на {comment_in} ")
         comment_update = await CommentDAO.update(
             self.db,
