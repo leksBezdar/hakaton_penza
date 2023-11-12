@@ -117,6 +117,10 @@ class Recommendations:
             user_low_rated_films = await self._get_user_low_rated_films(user_ratings)
 
             user_rated_films = user_high_rated_films + user_low_rated_films
+            
+            if not user_rated_films:
+                return all_films
+            
             suitable_films = tuple([film for film in all_films if film.id not in user_rated_films])
             
             return suitable_films
@@ -170,7 +174,7 @@ class Recommendations:
         
         try:
             suitable_films = await self._get_suitable_films(user_ratings, all_films)
-
+            
             if len(suitable_films) <= num_additional_films:
                 random_related_films = suitable_films
             else:
@@ -185,7 +189,6 @@ class Recommendations:
     async def _get_recommended_films(self,
         num_films: int,
         all_films: tuple[Film],
-        user_id: str,
         user_ratings: list) -> set[Film]:
         
         """
@@ -206,6 +209,14 @@ class Recommendations:
             user_high_rated_films = await self._get_user_high_rated_films(user_ratings)
             target_genres = await self._get_most_common_genres(user_high_rated_films, all_films)
 
+            if not target_genres:
+                
+                num_additional_films = num_films
+                random_films = set()
+                random_films = await self._get_additional_films(random_films, num_additional_films, user_ratings, all_films)
+                
+                return random_films
+            
             suitable_films = await self._get_suitable_films(user_ratings, all_films)
 
             similar_films = set()
@@ -221,7 +232,7 @@ class Recommendations:
 
             if len(similar_films) < num_films:
                 num_additional_films = num_films - len(similar_films)
-                similar_films = await self._get_additional_films(similar_films, user_id, num_additional_films, user_ratings)
+                similar_films = await self._get_additional_films(similar_films, num_additional_films, user_ratings, all_films)
                 
             return similar_films  
         
@@ -230,7 +241,7 @@ class Recommendations:
             raise 
             
     
-    async def _get_additional_films(self, similar_films: set, user_id: str, num_additional_films: int, user_ratings: list) -> set:
+    async def _get_additional_films(self, similar_films: set, num_additional_films: int, user_ratings: list, all_films: tuple[Film]) -> set:
         
         """
         Добавляет дополнительные случайные фильмы к списку рекомендаций.
@@ -245,8 +256,8 @@ class Recommendations:
             set: Обновленное множество рекомендаций с добавленными случайными фильмами.
         """
 
-        additional_films = await self._get_random_related_films(user_id, num_additional_films, user_ratings)
-        similar_films.add(additional_films)
+        additional_films = await self._get_random_related_films(num_additional_films, all_films, user_ratings)
+        similar_films.update(additional_films)
         
         return similar_films
     
@@ -291,7 +302,7 @@ class Recommendations:
             
             all_films = tuple(await FilmDAO.find_all(self.db))
             user_ratings = await self._get_recent_ratings(user_id=user_id)     
-            recommendations = await self._get_recommended_films(num_films, all_films, user_id, user_ratings)
+            recommendations = await self._get_recommended_films(num_films, all_films, user_ratings)
             
             return recommendations
         

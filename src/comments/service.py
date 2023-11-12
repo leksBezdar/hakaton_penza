@@ -18,7 +18,7 @@ from ..reviews.models import Review
 class CommentCRUD:
     
     def __init__(self, db: AsyncSession):
-        self.db = db 
+        self.db = db
         
     async def create_comment(self, token: str, comment: schemas.CommentCreate, parent_comment_id: str, parent_review_id: int):    
         
