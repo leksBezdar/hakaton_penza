@@ -21,7 +21,7 @@ class FilmBase(BaseModel):
     box_office_world: str | None
     premiere_russia: str | None
     premiere_world: str
-    average_rating: float
+    average_rating: float = 0
     age_rating: str | None
     local_rating: float = 0
     description: str

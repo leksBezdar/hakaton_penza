@@ -57,8 +57,19 @@ class ReviewCRUD:
     async def get_all_reviews(self, *filter, offset: int = 0, limit: int = 100, **filter_by) -> list[Review]:
         logger.info("Получаю все ревьюшки")
         reviews = await ReviewDAO.find_all(self.db, *filter, offset=offset, limit=limit, **filter_by)
+        
+        sorted_reviews = await self._sort_reviews_by_rating(reviews)
+        
         logger.debug(f"Ревьюшки: {reviews}")
-        return reviews
+        return sorted_reviews
+    
+    @staticmethod
+    async def _sort_reviews_by_rating(reviews: list[Review]) -> list[Review]:
+        
+        sorted_reviews = sorted(reviews, key=lambda review: review.review_rating, reverse=True)
+        
+        return sorted_reviews
+        
 
     async def update_review(self, review_id: int, review_in: schemas.ReviewUpdate):
         logger.debug(f"Обновляю ревьюшку {review_id} на {review_in}")
