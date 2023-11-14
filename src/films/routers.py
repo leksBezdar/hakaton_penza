@@ -38,7 +38,7 @@ async def get_film(
 @router.get("/get_all_films")
 async def get_all_films(
     offset: int = 0,
-    limit: int = 10,
+    limit: int = 100,
     db: AsyncSession = Depends(get_async_session),
 ):
     db_manager = DatabaseManager(db)

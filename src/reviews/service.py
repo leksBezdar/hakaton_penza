@@ -1,4 +1,4 @@
-from sqlalchemy import or_
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from loguru import logger
@@ -56,19 +56,21 @@ class ReviewCRUD:
 
     async def get_all_reviews(self, *filter, offset: int = 0, limit: int = 100, **filter_by) -> list[Review]:
         logger.info("Получаю все ревьюшки")
-        reviews = await ReviewDAO.find_all(self.db, *filter, offset=offset, limit=limit, **filter_by)
         
-        sorted_reviews = await self._sort_reviews_by_rating(reviews)
+        query = (
+                select(Review)
+                .order_by(Review.review_rating.desc())
+                .offset(offset)
+                .limit(limit)
+            )
+        
+        result = await self.db.execute(query)            
+        reviews = result.scalars().all()
+        
+        print(*[review.review_rating for review in reviews])
         
         logger.debug(f"Ревьюшки: {reviews}")
-        return sorted_reviews
-    
-    @staticmethod
-    async def _sort_reviews_by_rating(reviews: list[Review]) -> list[Review]:
-        
-        sorted_reviews = sorted(reviews, key=lambda review: review.review_rating, reverse=True)
-        
-        return sorted_reviews
+        return reviews
         
 
     async def update_review(self, review_id: int, review_in: schemas.ReviewUpdate):
