@@ -106,8 +106,6 @@ def upgrade() -> None:
         sa.Column('username', sa.String(), nullable=False),
         sa.Column('message', sa.String(), nullable=False),
         sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.ForeignKeyConstraint(['username'], ['users.username'], ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['film_id'], ['films.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
     )

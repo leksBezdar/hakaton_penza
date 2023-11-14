@@ -11,9 +11,9 @@ class Comment(Base):
     __tablename__ = "comments"
 
     id: Mapped[str] = mapped_column(primary_key=True, nullable=False, index=True)
-    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    user_id: Mapped[str] = mapped_column(nullable=False)
     film_id: Mapped[int] = mapped_column(ForeignKey("films.id", ondelete="CASCADE"), nullable=True)
-    username: Mapped[str] = mapped_column(ForeignKey("users.username", ondelete="CASCADE"))
+    username: Mapped[str] = mapped_column(nullable=False)
     message: Mapped[str] = mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True),
                                                  server_default=func.now())

@@ -14,8 +14,8 @@ class CommentCreate(CommentBase):
 # Схема для создания записи (CRUD - Create)
 class CommentCreateDB(CommentBase):
     id: str
-    user_id: str
-    username: str
+    user_id: str 
+    username: str 
 
 # Схема для чтения (CRUD - Read)
 class CommentRead(CommentBase):

@@ -16,8 +16,8 @@ router = APIRouter()
 
 @router.post("/create_comment/", response_model=schemas.CommentBase)
 async def create_comment(
-    token: str,
     comment_data: schemas.CommentCreate,
+    token: str = None,
     parent_comment_id: str = None,
     parent_review_id: int = None,
     db: AsyncSession = Depends(get_async_session),

@@ -20,7 +20,7 @@ class CommentCRUD:
     def __init__(self, db: AsyncSession):
         self.db = db
         
-    async def create_comment(self, token: str, comment: schemas.CommentCreate, parent_comment_id: str, parent_review_id: int):    
+    async def create_comment(self, token: str, comment: schemas.CommentCreate, parent_comment_id: str, parent_review_id: int):   
         
         comment_id = str(uuid4())
                 
@@ -29,20 +29,31 @@ class CommentCRUD:
         
         logger.debug(f"Создаю комментарий: {comment}")
         
-        auth_manager = AuthManager(self.db)
-        user_crud = auth_manager.user_crud       
-        user = await user_crud.get_user_by_access_token(access_token=token)
-        
-        db_comment = await CommentDAO.add(
-            self.db,
-            schemas.CommentCreateDB(
-                **comment.model_dump(),
-                id=comment_id,
-                user_id=user.id,
-                username=user.username,
+        if token:
+            auth_manager = AuthManager(self.db)
+            user_crud = auth_manager.user_crud       
+            user = await user_crud.get_user_by_access_token(access_token=token)
+
+            db_comment = await CommentDAO.add(
+                self.db,
+                schemas.CommentCreateDB(
+                    **comment.model_dump(),
+                    id=comment_id,
+                    user_id=user.id,
+                    username=user.username,
+                )
             )
-        )
-        
+        else:
+            db_comment = await CommentDAO.add(
+                    self.db,
+                    schemas.CommentCreateDB(
+                        **comment.model_dump(),
+                        id=comment_id,
+                        user_id="0",
+                        username="John Doe",
+                    )
+                )
+
         self.db.add(db_comment)
         await self.db.commit()
         await self.db.refresh(db_comment)
