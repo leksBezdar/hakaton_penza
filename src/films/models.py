@@ -31,7 +31,7 @@ class Film(Base):
     is_favorite: Mapped[bool] = mapped_column(nullable=False, default=False)
     is_postponed: Mapped[bool] = mapped_column(nullable=False, default=False)
     is_finished: Mapped[bool] = mapped_column(nullable=False, default=False)
-    description: Mapped[str] = mapped_column(nullable=False)
+    description: Mapped[str] = mapped_column(nullable=True)
 
     average_rating: Mapped[float] = mapped_column(nullable=True, default=0)
     local_rating: Mapped[float] = mapped_column(nullable=True)

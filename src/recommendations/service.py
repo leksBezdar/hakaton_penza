@@ -129,10 +129,35 @@ class Recommendations:
             print(f"Error in _get_suitable_films: {e}")
             raise 
 
-    async def _get_most_common_genres(self, user_positive_films: list, all_films: tuple[Film]) -> list[str]:
-        
+    async def _calculate_genre_coefficients(self, user_positive_films: list, all_films: tuple[Film]) -> dict:
         """
-        Возвращает наиболее часто встречающиеся жанры среди фильмов, оцененных положительно пользователем.
+        Рассчитывает коэффициенты заинтересованности в жанрах на основе оцененных пользователем фильмов.
+
+        Args:
+            user_positive_films (List[int]): Список идентификаторов фильмов, оцененных положительно.
+            all_films (tuple[Film]): Все фильмы в базе данных.
+
+        Returns:
+            dict: Словарь, где ключи - жанры, значения - их коэффициенты заинтересованности.
+        """
+        genre_count = {}
+        total_genres = 0
+
+        for film_id in user_positive_films:
+            film = next((film for film in all_films if film.id == film_id), None)
+            if film:
+                total_genres += len(film.genres)
+                for genre in film.genres:
+                    genre_count[genre] = genre_count.get(genre, 0) + 1
+
+        genre_coefficients = {genre: count / total_genres for genre, count in genre_count.items()}
+        
+        return genre_coefficients
+
+    async def _get_most_common_genres(self, user_positive_films: list, all_films: tuple[Film]) -> list[str]:
+        """
+        Возвращает наиболее часто встречающиеся жанры среди фильмов, оцененных положительно пользователем,
+        учитывая коэффициенты заинтересованности.
 
         Args:
             user_positive_films (List[int]): Список идентификаторов фильмов, оцененных положительно.
@@ -141,21 +166,13 @@ class Recommendations:
         Returns:
             List[str]: Список наиболее популярных жанров среди положительных оценок.
         """
-        
-        try: 
-        
-            genre_count = {}
-            for film_id in user_positive_films:
-                film = next((film for film in all_films if film.id == film_id), None)
-                for genre in film.genres:
-                    genre_count[genre] = genre_count.get(genre, 0) + 1
+        genre_coefficients = await self._calculate_genre_coefficients(user_positive_films, all_films)
 
-            sorted_genres = sorted(genre_count.keys(), key=lambda genre: genre_count[genre], reverse=True)
+        sorted_most_commot_genres = dict(sorted(genre_coefficients.items(), key=lambda item: item[1], reverse=True))
+        
+        target_genres = dict(list(sorted_most_commot_genres.items())[:int(NUM_GENRES)+1])
 
-            return sorted_genres[:int(NUM_GENRES)+1]
-        except Exception as e:
-            print(f"Error in _get_most_common_genres: {e}")
-            raise 
+        return target_genres
     
     async def _get_random_related_films(self, num_additional_films: int, all_films: tuple[Film], user_ratings: list) -> list[int]:
         
@@ -207,9 +224,9 @@ class Recommendations:
         try:
         
             user_high_rated_films = await self._get_user_high_rated_films(user_ratings)
-            target_genres = await self._get_most_common_genres(user_high_rated_films, all_films)
+            target_genres_coefficients = await self._get_most_common_genres(user_high_rated_films, all_films)
 
-            if not target_genres:
+            if not target_genres_coefficients:
                 
                 num_additional_films = num_films
                 random_films = set()
@@ -225,7 +242,7 @@ class Recommendations:
                 if len(similar_films) >= num_films:
                     break
                 
-                is_similar = await self._get_similar_film(film, target_genres)
+                is_similar = await self._get_similar_film(film, target_genres_coefficients)
                 if is_similar:
                     similar_films.add(is_similar)
                     
@@ -261,26 +278,24 @@ class Recommendations:
         
         return similar_films
     
-    async def _get_similar_film(self, film: Film, target_genres: list) -> Film | None:
-        
+    async def _get_similar_film(self, film: Film, target_genres_coefficients: dict) -> Film | None:
         """
         Определяет и добавляет схожие фильмы с жанрами наподобие предпочитаемых жанров пользователя.
 
         Args:
             film (Film): Фильм, для которого определяется похожесть на жанры.
-            target_genres (List[str]): Список жанров, предпочитаемых пользователем.
+            target_genres_coefficients (dict): Словарь коэффициентов заинтересованности в жанрах пользователя.
 
         Returns:
             Film or None: Фильм, если он похож на предпочитаемые жанры, или None, если не похож.
         """
-        
         try:
-            common_genres = set(film.genres) & set(target_genres)
-            similarity = len(common_genres) / len(target_genres)
+            film_genres_coefficient_sum = sum(target_genres_coefficients.get(genre, 0) for genre in film.genres)
+            similarity = film_genres_coefficient_sum / len(film.genres)
 
             if similarity >= float(SIMILARITY_COEFFICIENT):
                 return film
-        
+
         except Exception as e:
             print(f"Error in _get_similar_film: {e}")
             raise
