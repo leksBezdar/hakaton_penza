@@ -6,7 +6,7 @@ from typing import List
 class FilmBase(BaseModel):
     title: str
     poster: str
-    trailer: str | None
+    trailer: str | None = None
     country: str
     genres: List[str]
     year: int

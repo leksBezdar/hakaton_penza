@@ -24,7 +24,7 @@ class FilmCRUD:
 
     async def create_film(self, film: schemas.FilmCreate) -> Film:
         
-        if await self._check_existing_film(film.title, film.trailer, film.poster):
+        if await self._check_existing_film(film.title, film.poster):
             raise exceptions.FilmAlreadyExists
 
         db_film = await FilmDAO.add(
@@ -117,12 +117,11 @@ class FilmCRUD:
         await self.db.commit()
         
         
-    async def _check_existing_film(self, title: str, trailer: str, poster: str) -> bool:
+    async def _check_existing_film(self, title: str, poster: str) -> bool:
         
         film = await FilmDAO.find_one_or_none(self.db, or_(
             Film.title == title,
             Film.poster == poster,
-            Film.trailer == trailer
         ))
         
         return bool(film)
