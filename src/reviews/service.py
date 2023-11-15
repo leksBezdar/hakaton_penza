@@ -60,14 +60,14 @@ class ReviewCRUD:
         query = (
                 select(Review)
                 .order_by(Review.review_rating.desc())
+                .filter(*filter)
+                .filter_by(**filter_by)
                 .offset(offset)
                 .limit(limit)
             )
         
         result = await self.db.execute(query)            
         reviews = result.scalars().all()
-        
-        print(*[review.review_rating for review in reviews])
         
         logger.debug(f"Ревьюшки: {reviews}")
         return reviews
