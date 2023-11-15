@@ -68,7 +68,7 @@ def upgrade() -> None:
         sa.Column('budget', sa.String(), nullable=True),
         sa.Column('box_office_world', sa.String(), nullable=True),
         sa.Column('premiere_russia', sa.String()),
-        sa.Column('premiere_world', sa.String(), nullable=False),
+        sa.Column('premiere_world', sa.String(), nullable=True),
         sa.Column('age_rating', sa.String(), nullable=True),
         sa.Column('average_rating', sa.Float(), nullable=True),
         sa.Column('description', sa.String(), nullable=True),

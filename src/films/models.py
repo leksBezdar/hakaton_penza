@@ -24,7 +24,7 @@ class Film(Base):
     budget: Mapped[str] = mapped_column(nullable=True)
     box_office_world: Mapped[str] = mapped_column(nullable=True)
     premiere_russia: Mapped[str] = mapped_column(nullable=True)
-    premiere_world: Mapped[str] = mapped_column(nullable=False)
+    premiere_world: Mapped[str] = mapped_column(nullable=True)
     age_rating: Mapped[str] = mapped_column(nullable=True, default=False)
     is_planned: Mapped[bool] = mapped_column(nullable=False, default=False)
     is_abandoned: Mapped[bool] = mapped_column(nullable=False, default=False)
