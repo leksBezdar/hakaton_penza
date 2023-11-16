@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,24 +14,31 @@ from ..database import get_async_session
 router = APIRouter()
 
 
-@router.post("/create_comment/", response_model=schemas.CommentBase)
-async def create_comment(
-    comment_data: schemas.CommentCreate,
-    token: str = None,
-    parent_comment_id: str = None,
-    parent_review_id: int = None,
+@router.websocket("/ws/comment/create")
+async def create_comment_ws(
+    websocket: WebSocket,
     db: AsyncSession = Depends(get_async_session),
-) -> Comment:
-
+):
+    await websocket.accept()
+    
     db_manager = DatabaseManager(db)
     comment_crud = db_manager.comment_crud
     
-    return await comment_crud.create_comment(
-        token=token, comment=comment_data,
-        parent_comment_id=parent_comment_id,
-        parent_review_id=parent_review_id
-        )
+    try:
+        while True:
 
+            comment_data = await websocket.receive_json()
+            comment = schemas.CommentCreate(**comment_data)
+
+            comment_obj = await comment_crud.create_comment(
+                comment=comment,
+                db=db
+            )
+
+            await websocket.send_json({"comment_id": comment_obj.id, "status": "success"})
+            
+    except WebSocketDisconnect:
+        pass
 
 @router.get("/get_all_comments")
 async def get_all_comments(

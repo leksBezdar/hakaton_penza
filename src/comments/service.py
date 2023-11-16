@@ -20,46 +20,45 @@ class CommentCRUD:
     def __init__(self, db: AsyncSession):
         self.db = db
         
-    async def create_comment(self, token: str, comment: schemas.CommentCreate, parent_comment_id: str, parent_review_id: int):   
-        
+    async def create_comment(
+        self,
+        comment: schemas.CommentCreate,
+        db: AsyncSession,
+    ):
         comment_id = str(uuid4())
-                
+
         if comment.film_id:
-            await check_record_existence(self.db, Film, comment.film_id)     
-        
+            await check_record_existence(db, Film, comment.film_id)
+
         logger.debug(f"Создаю комментарий: {comment}")
-        
-        if token:
-            auth_manager = AuthManager(self.db)
-            user_crud = auth_manager.user_crud       
-            user = await user_crud.get_user_by_access_token(access_token=token)
+
+        if comment.token:
+            auth_manager = AuthManager(db)
+            user_crud = auth_manager.user_crud
+            user = await user_crud.get_user_by_access_token(access_token=comment.token)
 
             db_comment = await CommentDAO.add(
-                self.db,
+                db,
                 schemas.CommentCreateDB(
-                    **comment.model_dump(),
-                    id=comment_id,
-                    user_id=user.id,
-                    username=user.username,
-                )
+                    **comment.model_dump(), id=comment_id, user_id=user.id, username=user.username
+                ),
             )
         else:
             db_comment = await CommentDAO.add(
-                    self.db,
-                    schemas.CommentCreateDB(
-                        **comment.model_dump(),
-                        id=comment_id,
-                        user_id="0",
-                        username="John Doe",
-                    )
-                )
+                db,
+                schemas.CommentCreateDB(
+                    **comment.model_dump(), id=comment_id, user_id="0", username="John Doe"
+                ),
+            )
 
-        self.db.add(db_comment)
-        await self.db.commit()
-        await self.db.refresh(db_comment)
-
-        await self._check_if_is_reply(parent_comment_id, parent_review_id, comment_id)
+        db.add(db_comment)
+        await db.commit()
+        await db.refresh(db_comment)
         
+
+        await self._check_if_is_reply(comment.parent_comment_id[0], comment.parent_review_id[0], comment_id)
+        
+
         return db_comment
     
     async def _create_reply_comment(self, reply_data: schemas.ReplyCommentData):
