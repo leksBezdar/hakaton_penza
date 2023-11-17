@@ -3,7 +3,7 @@ from fastapi import HTTPException
 
 class InvalidCredentials(HTTPException):
     def __init__(self):
-        super().__init__(status_code=400, detail="Incorrect username or password")
+        super().__init__(status_code=401, detail="Incorrect username or password")
 
 
 class InvalidAuthenthicationCredential(HTTPException):

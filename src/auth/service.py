@@ -56,13 +56,16 @@ class UserCRUD:
         return db_user
 
     async def authenticate_user(self, username: str, password: str) -> User | None:
+        
+        try: 
 
-        user = await self.get_existing_user(username=username)
-        is_valid_password = await utils.validate_password(password=password, hashed_password=user.hashed_password)
-        if not user or not is_valid_password:
-            raise exceptions.InvalidCredentials
+            user = await self.get_existing_user(username=username)
+            await utils.validate_password(password=password, hashed_password=user.hashed_password)
 
-        return user
+            return user
+        
+        except AttributeError:
+            raise exceptions.InvalidAuthenthicationCredential
 
     async def logout(self, refresh_token: str = None) -> None:
 
