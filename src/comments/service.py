@@ -8,7 +8,7 @@ from . import schemas
 from .dao import CommentDAO, ReplyCommentDAO
 from .models import Comment
 
-from ..utils import check_record_existence
+from ..utils import check_record_existence, get_unique_id
 from ..auth.service import DatabaseManager as AuthManager
 from ..films.models import Film
 from ..reviews.models import Review
@@ -20,44 +20,41 @@ class CommentCRUD:
     def __init__(self, db: AsyncSession):
         self.db = db
         
-    async def create_comment(
-        self,
-        comment: schemas.CommentCreate,
-        db: AsyncSession,
-    ):
-        comment_id = str(uuid4())
+    async def create_comment(self, comment: schemas.CommentCreate, db: AsyncSession):
+        
+        logger.debug(f"Создаю комментарий: {comment}")
+        
+        comment_id = await get_unique_id()
+        
+        # Создаем профильные данные гостя
+        user_id, username = "0", "John Doe"
 
+        if comment.token:
+            
+            auth_manager = AuthManager(db)
+            user_crud = auth_manager.user_crud
+            
+            user = await user_crud.get_user_by_access_token(access_token=comment.token)
+            user_id, username = user.id, user.username
+            
         if comment.film_id:
             await check_record_existence(db, Film, comment.film_id)
 
-        logger.debug(f"Создаю комментарий: {comment}")
-
-        if comment.token:
-            auth_manager = AuthManager(db)
-            user_crud = auth_manager.user_crud
-            user = await user_crud.get_user_by_access_token(access_token=comment.token)
-
-            db_comment = await CommentDAO.add(
-                db,
-                schemas.CommentCreateDB(
-                    **comment.model_dump(), id=comment_id, user_id=user.id, username=user.username
-                ),
-            )
-        else:
-            db_comment = await CommentDAO.add(
-                db,
-                schemas.CommentCreateDB(
-                    **comment.model_dump(), id=comment_id, user_id="0", username="John Doe"
-                ),
-            )
+        db_comment = await CommentDAO.add(
+            db,
+            schemas.CommentCreateDB(
+                **comment.model_dump(),
+                id=comment_id,
+                user_id=user_id,
+                username=username
+            ),
+        )
 
         db.add(db_comment)
         await db.commit()
         await db.refresh(db_comment)
-        
 
-        await self._check_if_is_reply(comment.parent_comment_id[0], comment.parent_review_id[0], comment_id)
-        
+        await self._check_if_is_reply(comment.parent_comment_id, comment.parent_review_id, comment_id)
 
         return db_comment
     
@@ -70,7 +67,7 @@ class CommentCRUD:
             self.db,
             schemas.ReplyCommentCreateDB(
             **reply_data.model_dump(),
-            id = str(uuid4())
+            id = await get_unique_id()
             )
         )
         

@@ -20,7 +20,7 @@ from .config import (
 from .dao import RefreshTokenDAO, UserDAO
 from .models import Refresh_token, User
 
-
+from ..utils import get_unique_id
 
 class UserCRUD:
 
@@ -32,12 +32,9 @@ class UserCRUD:
         if await self.get_existing_user(email=user.email, username=user.username):
             raise exceptions.UserAlreadyExists
 
-        # Генерирование уникального ID для пользователя
-        id = str(uuid4())
-
-        # Хеширование пароля перед сохранением
-        salt = await utils.get_random_string()
-        hashed_password = await utils.hash_password(user.password, salt)
+        id = await get_unique_id()
+        
+        hashed_password = await utils.get_hashed_password(user.password)
 
         # Создание экземпляра User с предоставленными данными
         db_user = await UserDAO.add(
@@ -45,7 +42,7 @@ class UserCRUD:
             schemas.UserCreateDB(
                 **user.model_dump(),
                 id=id,
-                hashed_password=f"{salt}${hashed_password}"
+                hashed_password=hashed_password
             )
         )
 
@@ -55,7 +52,7 @@ class UserCRUD:
 
         return db_user
 
-    async def authenticate_user(self, username: str, password: str) -> User | None:
+    async def authenticate_user(self, username: str, password: str) -> User:
         
         try: 
 
@@ -67,7 +64,7 @@ class UserCRUD:
         except AttributeError:
             raise exceptions.InvalidAuthenthicationCredential
 
-    async def logout(self, refresh_token: str = None) -> None:
+    async def logout(self, refresh_token: str = None) -> JSONResponse:
 
         if not refresh_token:
             return exceptions.InactiveUser
@@ -87,8 +84,6 @@ class UserCRUD:
         await self.db.commit()
         
         return response
-
-    # Проверка наличия пользователя с заданной электронной почтой, именем пользователя или ID
 
     async def get_existing_user(self, email: str = None, username: str = None, user_id: str = None, token: str = None) -> User:
 
@@ -207,7 +202,7 @@ class TokenCrud:
     # Создание refresh токена
 
     async def _create_refresh_token(self) -> str:
-        return str(uuid4())
+        return await get_unique_id()
 
     # Создание access и refresh токенов для пользователя
     async def create_tokens(self, user_id: str, response: Response, isDev: bool):

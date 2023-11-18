@@ -73,3 +73,11 @@ async def hash_password(password: str, salt: str = None):
     enc = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 100_000)
 
     return enc.hex()
+
+
+async def get_hashed_password(password: str):
+    
+    salt = await get_random_string()
+    hashed_password = await hash_password(password, salt)
+    
+    return hashed_password

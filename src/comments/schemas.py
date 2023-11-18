@@ -9,9 +9,9 @@ class CommentBase(BaseModel):
 
 # Схема для создания записи (CRUD - Create)
 class CommentCreate(CommentBase):
-    token: str = None,
-    parent_comment_id: str | None = None,
-    parent_review_id: int | None = None,
+    token: str = None
+    parent_comment_id: str | None = None
+    parent_review_id: int | None = None
 
 # Схема для создания записи (CRUD - Create)
 class CommentCreateDB(CommentBase):
