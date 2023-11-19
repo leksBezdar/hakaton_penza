@@ -10,6 +10,7 @@ class Film(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(nullable=False, unique=True)
     poster: Mapped[str] = mapped_column(nullable=False, unique=True)
+    trailer_poster : Mapped[str] = mapped_column(unique=True, nullable=True)
     trailer: Mapped[str] = mapped_column(nullable=True, unique=True)
     country: Mapped[str] = mapped_column(nullable=False)
     genres: Mapped[list] = mapped_column(ARRAY(String), nullable=False, default=[])
