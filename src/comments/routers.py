@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from loguru import logger  
 
 from . import schemas
 
@@ -26,7 +27,7 @@ async def create_comment_ws(
     
     try:
         while True:
-
+            logger.info("Сокет открыт")
             comment_data = await websocket.receive_json()
             comment = schemas.CommentCreate(**comment_data)
 
@@ -38,7 +39,7 @@ async def create_comment_ws(
             await websocket.send_json({"comment_id": comment_obj.id, "status": "success"})
             
     except WebSocketDisconnect:
-        pass
+        logger.warning("Сокет закрылся")
 
 @router.get("/get_all_comments")
 async def get_all_comments(
