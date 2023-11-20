@@ -16,7 +16,7 @@ router =  APIRouter(
 
 @router.get("/get_all_cities/")
 async def get_all_cities() -> dict:
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
+    async with aiohttp.ClientSession() as session:
         params = {"api_key": API_KEY}
         url = urljoin(BASE_URL, "cities")
 
@@ -28,7 +28,7 @@ async def get_all_cities() -> dict:
 
 @router.get("/get_schedule_events/")
 async def get_schedule_events(city: str,  date_end: datetime="") -> dict:
-    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
+    async with aiohttp.ClientSession() as session:
         url = urljoin(BASE_URL, "schedule")
         params = {"api_key": API_KEY, "city": city, "date_end": date_end}
         

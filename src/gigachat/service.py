@@ -37,13 +37,13 @@ class GigaChatLogic:
         try:
             match method:
                 case "GET":
-                    async with ClientSession(connector=TCPConnector(ssl=False)) as session:
+                    async with ClientSession() as session:
                         async with session.get(url=url, headers=headers) as response:
                             logger.debug(f"response: {response}")
                             logger.debug(f"response: {await response.json()}")
                             return await response.json()
                 case "POST":
-                    async with ClientSession(connector=TCPConnector(ssl=False)) as session:
+                    async with ClientSession() as session:
                         async with session.post(url=url, headers=headers, json=data) as response:
                             logger.debug(f"response: {response}")
                             logger.debug(f"response: {await response.json()}")
@@ -56,7 +56,7 @@ class GigaChatLogic:
             raise
 
     async def __get_access_token_and_time(self) -> None:  
-        async with ClientSession(connector=TCPConnector(ssl=False)) as session:
+        async with ClientSession() as session:
             async with session.post(url=AUTH_URL, headers=AUTH_HEADERS, data=AUTH_DATA) as resp: 
                 logger.debug(f"response_json: {await resp.json()}")
                 response_json = await resp.json()

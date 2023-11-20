@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi_cache.decorator import cache
 
 from . import schemas
 
@@ -34,7 +35,7 @@ async def get_film(
 
     return await film_crud.get_film(film_id=film_id)
 
-
+@cache(expire=60*60*24*7)
 @router.get("/get_all_films")
 async def get_all_films(
     offset: int = 0,
