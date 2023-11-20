@@ -104,6 +104,7 @@ async def get_all_users(
 
 @router.patch("/refresh_tokens")
 async def refresh_token(
+    token: str,
     request: Request,
     response: Response,
     db: AsyncSession = Depends(get_async_session),
@@ -112,7 +113,7 @@ async def refresh_token(
     db_manager = DatabaseManager(db)
     token_crud = db_manager.token_crud
 
-    new_token = await token_crud.refresh_token(request.cookies.get("refresh_token"), response=response)
+    new_token = await token_crud.refresh_token(token, response=response)
 
     return new_token
 
