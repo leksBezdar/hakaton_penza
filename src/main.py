@@ -64,7 +64,7 @@ html = """
         <ul id='messages'>
         </ul>
         <script>
-            var ws = new WebSocket("ws://localhost:8000/ws/comment/create");
+            var ws = new WebSocket("wss://www.backend.movie-rank.ru/ws/comment/create");
             ws.onmessage = function(event) {
                 var messages = document.getElementById('messages')
                 var message = document.createElement('li')
