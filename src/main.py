@@ -4,11 +4,6 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from fastapi_cache import FastAPICache
-from fastapi_cache.backends.redis import RedisBackend
-from fastapi_cache.decorator import cache
-from redis import asyncio as aioredis
-
 from loguru import logger
 
 from src.auth.routers import router as auth_router
@@ -94,10 +89,6 @@ html = """
 async def get():
     return HTMLResponse(html)
 
-@app.on_event("startup")
-async def startup():
-    redis = aioredis.from_url("redis://localhost")
-    FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
 
 # @app.get("/", response_class=HTMLResponse)
 # def home(request: Request):
