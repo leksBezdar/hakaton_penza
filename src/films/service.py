@@ -78,6 +78,25 @@ class FilmCRUD:
 
         return films
 
+    async def get_films_by_name(self, film_name: str) -> list[Film] | None: 
+        """
+        Получает информацию о трех фильмах схожих с film_name
+        Args:
+            film_title (str, optional): Название фильма для поиска.
+            film_id (int, optional): Идентификатор фильма для поиска.
+
+        Returns:
+            Optional[Film]: Запись о фильме, если найдена, в противном случае None.
+
+        """
+        try:
+            logger.debug(f"Пытаюсь найти похожие фильмы: {film_name}")
+            films = await FilmDAO.find_three_or_none(self.db, film_name.lower())
+
+            return films
+        except Exception as e:
+            logger.opt(exception=e).critical("Error in get_films_by_name")
+
     async def update_film(self, film_id: int, film_in: schemas.FilmUpdate):
         """
         Обновляет информацию о фильме.

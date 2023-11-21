@@ -1,6 +1,6 @@
 from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
 
-from sqlalchemy import delete, insert, select, update
+from sqlalchemy import delete, insert, select, update, func
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
@@ -50,6 +50,17 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         result = await db.execute(stmt)
 
         return result.scalars().one_or_none()
+    
+    @classmethod
+    async def find_three_or_none(cls, db: AsyncSession, *filter, limit: int = 3) -> Optional[ModelType]:
+
+        stmt = (
+            select(cls.model)
+            .filter(func.lower((cls.model.title)).contains(*filter))
+            .limit(limit)
+        )
+        result = await db.execute(stmt)
+        return result.scalars().all()
 
     @classmethod
     async def find_all(
