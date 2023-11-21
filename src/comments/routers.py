@@ -38,6 +38,17 @@ async def create_comment_ws(
             
     except WebSocketDisconnect:
         pass
+    
+@router.post("/create_comment/", response_model=schemas.CommentBase)
+async def create_comment(
+    comment_data: schemas.CommentCreate,
+    db: AsyncSession = Depends(get_async_session),
+) -> Comment:
+
+    db_manager = DatabaseManager(db)
+    comment_crud = db_manager.comment_crud
+    
+    return await comment_crud.create_comment(comment=comment_data)
 
 @router.get("/get_all_comments")
 async def get_all_comments(

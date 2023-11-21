@@ -20,28 +20,28 @@ class CommentCRUD:
     def __init__(self, db: AsyncSession):
         self.db = db
         
-    async def create_comment(self, comment: schemas.CommentCreate, db: AsyncSession):
+    async def create_comment(self, comment: schemas.CommentCreate):
         
         logger.debug(f"Создаю комментарий: {comment}")
         
         comment_id = await get_unique_id()
         
         # Создаем профильные данные гостя
-        user_id, username = "0", "John Doe"
+        user_id, username = "0", "Гость"
 
         if comment.token:
             
-            auth_manager = AuthManager(db)
+            auth_manager = AuthManager(self.db)
             user_crud = auth_manager.user_crud
             
             user = await user_crud.get_user_by_access_token(access_token=comment.token)
             user_id, username = user.id, user.username
             
         if comment.film_id:
-            await check_record_existence(db, Film, comment.film_id)
+            await check_record_existence(self.db, Film, comment.film_id)
 
         db_comment = await CommentDAO.add(
-            db,
+            self.db,
             schemas.CommentCreateDB(
                 **comment.model_dump(),
                 id=comment_id,
@@ -50,9 +50,9 @@ class CommentCRUD:
             ),
         )
 
-        db.add(db_comment)
-        await db.commit()
-        await db.refresh(db_comment)
+        self.db.add(db_comment)
+        await self.db.commit()
+        await self.db.refresh(db_comment)
 
         await self._check_if_is_reply(comment.parent_comment_id, comment.parent_review_id, comment_id)
 
