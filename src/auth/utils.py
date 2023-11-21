@@ -78,6 +78,8 @@ async def hash_password(password: str, salt: str = None):
 async def get_hashed_password(password: str):
     
     salt = await get_random_string()
-    hashed_password = await hash_password(password, salt)
+    hash = await hash_password(password, salt)
+    
+    hashed_password = f"{salt}${hash}"
     
     return hashed_password
