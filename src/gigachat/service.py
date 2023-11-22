@@ -31,19 +31,19 @@ class GigaChatLogic:
         logger.debug(time)
         return dt.strptime(time, '%Y-%m-%d %H:%M:%S')
 
-    async def __create_async_request(self, url: str, headers: dict, method:str, data:dict=None) -> dict:
+    async def __create_async_request(self, *, url: str, headers: dict, method:str, data:dict=None) -> dict:
         """Делает асинхронную сессию и запросы. Возвращает json"""
         logger.debug(f"url: {url} | headers: {headers} | method: {method} | data: {data}")
         try:
             match method:
                 case "GET":
-                    async with ClientSession() as session:
+                    async with ClientSession(connector=TCPConnector(ssl=False)) as session:
                         async with session.get(url=url, headers=headers) as response:
                             logger.debug(f"response: {response}")
                             logger.debug(f"response: {await response.json()}")
                             return await response.json()
                 case "POST":
-                    async with ClientSession() as session:
+                    async with ClientSession(connector=TCPConnector(ssl=False)) as session:
                         async with session.post(url=url, headers=headers, json=data) as response:
                             logger.debug(f"response: {response}")
                             logger.debug(f"response: {await response.json()}")
@@ -56,7 +56,7 @@ class GigaChatLogic:
             raise
 
     async def __get_access_token_and_time(self) -> None:  
-        async with ClientSession() as session:
+        async with ClientSession(connector=TCPConnector(ssl=False)) as session:
             async with session.post(url=AUTH_URL, headers=AUTH_HEADERS, data=AUTH_DATA) as resp: 
                 logger.debug(f"response_json: {await resp.json()}")
                 response_json = await resp.json()
@@ -80,20 +80,25 @@ class GigaChatLogic:
         return await self.__create_async_request(url=url, headers=headers, method="GET")
     
     async def create_prompt(self, content: str) -> str:
-        logger.debug(f"content: {content}")
-        await self.__chek_valid_access_token()
-        url = urljoin(self.basse_url, f"chat/completions")
-        headers = {"Authorization" : f"Bearer {self.access_token}", "Content-Type": "application/json"}
-        data = {
-            "model": "GigaChat:latest", 
-            "messages": [{
-                "role": "user", 
-                "content": f"\
-                    Привет, посоветуй фильм на основе пожелания.\
-                    Пожелание: {content}.", 
-            }], 
-            "temperature": 0.5,
-            "max_tokens": 100}
-        
-        response = await self.__create_async_request(url=url, headers=headers, method="POST", data=data)
-        return response["choices"][0]["message"]
+        try:
+            logger.debug(f"content: {content}")
+            await self.__chek_valid_access_token()
+            url = urljoin(self.basse_url, f"chat/completions")
+            headers = {"Authorization" : f"Bearer {self.access_token}", "Content-Type": "application/json"}
+            data = {
+                "model": "GigaChat:latest", 
+                "messages": [{
+                    "role": "user", 
+                    "content": f"\
+                        Привет, посоветуй фильм на основе пожелания.\
+                        Пожелание: {content}.", 
+                }], 
+                "temperature": 0.5,
+                "max_tokens": 100}
+
+            response = await self.__create_async_request(url=url, headers=headers, method="POST", data=data)
+            return response["choices"][0]["message"]
+        except Exception as e:
+            logger.opt(exception=e).critical("Error im create promtr")
+            raise
+
