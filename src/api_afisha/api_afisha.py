@@ -1,9 +1,8 @@
 from urllib.parse import urljoin
 from datetime import datetime
 
-import aiohttp
 from fastapi import APIRouter
-from loguru import logger
+from fastapi_cache.decorator import cache
 
 from ..config import *
 from .utils import *
@@ -15,6 +14,7 @@ router =  APIRouter(
 )
 
 @router.get("/get_all_cities/")
+@cache(expire=60*60*24)
 async def get_all_cities() -> dict:
     url = urljoin(BASE_URL, "cities")
     params = {"api_key": API_KEY}
@@ -23,6 +23,7 @@ async def get_all_cities() -> dict:
 
 
 @router.get("/get_schedule_events/")
+@cache(expire=60*60)
 async def get_schedule_events(city: str,  date_end: datetime="") -> dict:
     url = urljoin(BASE_URL, "schedule")
     params = {"api_key": API_KEY, "city": city, "date_end": date_end}

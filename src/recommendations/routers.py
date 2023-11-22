@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi_cache.decorator import cache
 
 from .service import DatabaseManager
 
@@ -11,6 +12,7 @@ router = APIRouter()
 
 
 @router.get("/get_recommendations/")
+@cache(expire=60*60)
 async def get_recommendations(
     user_id: str,
     num_films: int = 20,

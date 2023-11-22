@@ -4,6 +4,10 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
+from redis import asyncio as aioredis
+
 from loguru import logger
 
 from src.auth.routers import router as auth_router
@@ -14,6 +18,8 @@ from src.comments.routers import router as comments_router
 from src.user_actions.routers import router as user_action_router
 from src.api_afisha.api_afisha import router as api_afisha_router
 from src.gigachat.router import router as ai_gigachat_router
+
+from src.config import HTML
 
 logger.add(f"/var/log/movie_rank_backend/log.log",
            format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name}:{function}:{line} - {message}",
@@ -50,44 +56,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-html = """
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Chat</title>
-    </head>
-    <body>
-        <h1>WebSocket Chat</h1>
-        <form action="" onsubmit="sendMessage(event)">
-            <input type="text" id="messageText" autocomplete="off"/>
-            <button>Send</button>
-        </form>
-        <ul id='messages'>
-        </ul>
-        <script>
-            var ws = new WebSocket("wss://www.backend.movie-rank.ru/ws/comment/create");
-            ws.onmessage = function(event) {
-                var messages = document.getElementById('messages')
-                var message = document.createElement('li')
-                var content = document.createTextNode(event.data)
-                message.appendChild(content)
-                messages.appendChild(message)
-            };
-            function sendMessage(event) {
-                var input = document.getElementById("messageText")
-                ws.send(input.value)
-                input.value = ''
-                event.preventDefault()
-            }
-        </script>
-    </body>
-</html>
-"""
+
+async def on_startup():
+    redis = aioredis.from_url("redis://localhost", encoding="utf8", decode_responses=True)
+    FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
+
+app.add_event_handler("startup", on_startup)
 
 
 @app.get("/")
 async def get():
-    return HTMLResponse(html)
+    return HTMLResponse(HTML)
 
 
 # @app.get("/", response_class=HTMLResponse)
