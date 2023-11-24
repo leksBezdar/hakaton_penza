@@ -42,7 +42,7 @@ async def login(
     user = await user_crud.authenticate_user(username=username, password=password)
     token = await token_crud.create_tokens(user_id=user.id, response=response, isDev=isDev)
 
-    return token, user.id
+    return token, user.id, user.is_superuser
 
 
 @router.post("/logout/")

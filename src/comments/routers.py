@@ -31,7 +31,6 @@ async def create_comment_ws(
 
             comment_obj = await comment_crud.create_comment(
                 comment=comment,
-                db=db
             )
 
             await websocket.send_json({"comment_id": comment_obj.id, "status": "success"})
