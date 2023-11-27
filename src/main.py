@@ -19,8 +19,6 @@ from src.user_actions.routers import router as user_action_router
 from src.api_afisha.api_afisha import router as api_afisha_router
 from src.gigachat.router import router as ai_gigachat_router
 
-from src.config import HTML
-
 logger.add(f"/var/log/movie_rank_backend/log.log",
            format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name}:{function}:{line} - {message}",
            encoding="utf-8",
@@ -60,21 +58,17 @@ app.add_middleware(
 async def on_startup():
     redis = aioredis.from_url("redis://localhost", encoding="utf8", decode_responses=True)
     FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
+    
 
 app.add_event_handler("startup", on_startup)
 
 
-@app.get("/")
-async def get():
-    return HTMLResponse(HTML)
-
-
-# @app.get("/", response_class=HTMLResponse)
-# def home(request: Request):
-#     return f"""
-#     <a href="{str(request.url)}docs"><h1>Documentation</h1></a><br>
-#     <a href="{str(request.url)}redoc"><h1>ReDoc</h1></a>
-#     """
+@app.get("/", response_class=HTMLResponse)
+def home(request: Request):
+    return f"""
+    <a href="{str(request.url)}docs"><h1>Documentation</h1></a><br>
+    <a href="{str(request.url)}redoc"><h1>ReDoc</h1></a>
+    """
 
 if __name__ == '__main__':
     uvicorn.run("src.main:app", host="0.0.0.0", port=8000, reload=True)
