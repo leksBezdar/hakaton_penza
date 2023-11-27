@@ -4,6 +4,7 @@ import string
 
 from typing import Dict, Optional
 
+from . import exceptions
 from fastapi import HTTPException, Request, status
 from fastapi.security import OAuth2
 from fastapi.security.utils import get_authorization_scheme_param
@@ -57,7 +58,8 @@ async def validate_password(password: str, hashed_password: str):
     salt, hashed = hashed_password.split("$")
     
     # Сравнение хешированного пароля
-    return await hash_password(password, salt) == hashed
+    if not await hash_password(password, salt) == hashed:
+        raise exceptions.InvalidAuthenthicationCredential
 
 
 # Метод для хеширования пароля с учетом соли
