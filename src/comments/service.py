@@ -1,3 +1,6 @@
+from datetime import datetime
+from json import JSONEncoder
+import json
 from uuid import uuid4
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -82,7 +85,8 @@ class CommentCRUD:
                  "parent_review_id": db_reply.parent_review_id, 
              })
              
-        return response_data
+        comment_obj_json = json.dumps(response_data, cls=CustomEncoder)
+        return comment_obj_json
 
     async def _create_reply_comment(self, reply_data: schemas.ReplyCommentData):
         
@@ -145,6 +149,13 @@ class CommentCRUD:
         await CommentDAO.delete(self.db, comment_id == Comment.id,)
 
         await self.db.commit()
+        
+
+class CustomEncoder(JSONEncoder):
+    def default(self, o):
+        if isinstance(o, datetime):
+            return o.isoformat()
+        return super().default(o)
         
 
 class DatabaseManager:

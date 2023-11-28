@@ -62,13 +62,52 @@ async def on_startup():
 
 app.add_event_handler("startup", on_startup)
 
+html = """
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Chat</title>
+    </head>
+    <body>
+        <h1>WebSocket Chat</h1>
+        <form action="" onsubmit="sendMessage(event)">
+            <input type="text" id="messageText" autocomplete="off"/>
+            <button>Send</button>
+        </form>
+        <ul id='messages'>
+        </ul>
+        <script>
+            var ws = new WebSocket("ws://localhost:8000/ws/comment/create");
+            ws.onmessage = function(event) {
+                var messages = document.getElementById('messages')
+                var message = document.createElement('li')
+                var content = document.createTextNode(event.data)
+                message.appendChild(content)
+                messages.appendChild(message)
+            };
+            function sendMessage(event) {
+                var input = document.getElementById("messageText")
+                ws.send(input.value)
+                input.value = ''
+                event.preventDefault()
+            }
+        </script>
+    </body>
+</html>
+"""
 
-@app.get("/", response_class=HTMLResponse)
-def home(request: Request):
-    return f"""
-    <a href="{str(request.url)}docs"><h1>Documentation</h1></a><br>
-    <a href="{str(request.url)}redoc"><h1>ReDoc</h1></a>
-    """
+
+@app.get("/")
+async def get():
+    return HTMLResponse(html)
+
+
+# @app.get("/", response_class=HTMLResponse)
+# def home(request: Request):
+#     return f"""
+#     <a href="{str(request.url)}docs"><h1>Documentation</h1></a><br>
+#     <a href="{str(request.url)}redoc"><h1>ReDoc</h1></a>
+#     """
 
 if __name__ == '__main__':
     uvicorn.run("src.main:app", host="0.0.0.0", port=8000, reload=True)
