@@ -34,7 +34,15 @@ async def create_comment_ws(
             )
 
 
-            await websocket.send_json({"id": comment_obj.id, "user_id": comment_obj.user_id, "username": comment_obj.username})
+            await websocket.send_json(
+                {
+                "id": comment_obj.id,
+                "user_id": comment_obj.user_id,
+                "username": comment_obj.username,
+                "message": comment_obj.message, 
+                "film_id": comment_obj.film_id
+                 }
+                )
             
     except WebSocketDisconnect:
         pass
