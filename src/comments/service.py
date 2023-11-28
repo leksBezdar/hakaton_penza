@@ -70,7 +70,8 @@ class CommentCRUD:
                  "user_id": db_comment.user_id,
                  "username": db_comment.username,
                  "message": db_comment.message, 
-                 "film_id": db_comment.film_id
+                 "film_id": db_comment.film_id,
+                 "created_at": db_comment.created_at
              })
              
         if db_reply is not None:
