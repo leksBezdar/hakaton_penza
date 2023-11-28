@@ -6,7 +6,7 @@ from loguru import logger
 
 from . import schemas
 from .dao import CommentDAO, ReplyCommentDAO
-from .models import Comment
+from .models import Comment, ReplyComment
 
 from ..utils import check_record_existence, get_unique_id
 from ..auth.service import DatabaseManager as AuthManager
@@ -20,7 +20,7 @@ class CommentCRUD:
     def __init__(self, db: AsyncSession):
         self.db = db
         
-    async def create_comment(self, comment: schemas.CommentCreate):
+    async def create_comment(self, comment: schemas.CommentCreate) -> Comment:
         
         logger.debug(f"Создаю комментарий: {comment}")
         
@@ -54,10 +54,35 @@ class CommentCRUD:
         await self.db.commit()
         await self.db.refresh(db_comment)
 
-        await self._check_if_is_reply(comment.parent_comment_id, comment.parent_review_id, comment_id)
+        db_reply = await self._check_if_is_reply(comment.parent_comment_id, comment.parent_review_id, comment_id)
+        
+        response_data = await self._set_responce_comment_data(db_comment, db_reply)
 
-        return db_comment
+        return response_data 
     
+    async def _set_responce_comment_data(self, db_comment: Comment, db_reply: ReplyComment):
+        
+        response_data = {}
+        
+        if db_comment is not None:
+             response_data.update({
+                 "id": db_comment.id,
+                 "user_id": db_comment.user_id,
+                 "username": db_comment.username,
+                 "message": db_comment.message, 
+                 "film_id": db_comment.film_id
+             })
+             
+        if db_reply is not None:
+             response_data.update({
+                 "reply_id": db_reply.id,
+                 "comment_id": db_reply.comment_id,
+                 "parent_comment_id": db_reply.parent_comment_id,
+                 "parent_review_id": db_reply.parent_review_id, 
+             })
+             
+        return response_data
+
     async def _create_reply_comment(self, reply_data: schemas.ReplyCommentData):
         
         if reply_data.parent_review_id:
@@ -85,7 +110,7 @@ class CommentCRUD:
                 parent_comment_id=parent_comment_id,
                 parent_review_id=parent_review_id
             )
-            await self._create_reply_comment(reply_data)
+            return await self._create_reply_comment(reply_data)
     
     async def get_all_replies(self, *filter, offset: int = 0, limit: int = 100, **filter_by):
 

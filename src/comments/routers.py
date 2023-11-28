@@ -1,3 +1,5 @@
+import json
+
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 
@@ -33,16 +35,7 @@ async def create_comment_ws(
                 comment=comment,
             )
 
-
-            await websocket.send_json(
-                {
-                "id": comment_obj.id,
-                "user_id": comment_obj.user_id,
-                "username": comment_obj.username,
-                "message": comment_obj.message, 
-                "film_id": comment_obj.film_id
-                 }
-                )
+            await websocket.send_json(comment_obj)
             
     except WebSocketDisconnect:
         pass
@@ -56,7 +49,9 @@ async def create_comment(
     db_manager = DatabaseManager(db)
     comment_crud = db_manager.comment_crud
     
-    return await comment_crud.create_comment(comment=comment_data)
+    comment_obj = await comment_crud.create_comment(comment=comment_data)
+        
+    return comment_obj
 
 @router.get("/get_all_comments")
 async def get_all_comments(

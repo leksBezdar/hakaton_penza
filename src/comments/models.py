@@ -23,5 +23,5 @@ class ReplyComment(Base):
     
     id: Mapped[str] = mapped_column(primary_key=True)
     comment_id: Mapped[str] = mapped_column(ForeignKey('comments.id', ondelete="CASCADE"))
-    parent_comment_id: Mapped[str] = mapped_column(ForeignKey('comments.id', ondelete="CASCADE"))
-    parent_review_id: Mapped[int] = mapped_column(ForeignKey('reviews.id', ondelete="CASCADE"))
+    parent_comment_id: Mapped[str] = mapped_column(nullable=True)
+    parent_review_id: Mapped[int] = mapped_column(nullable=True)
