@@ -235,7 +235,6 @@ class Recommendations:
                 return random_films
             
             suitable_films = await self._get_suitable_films(user_ratings, all_films)
-
             similar_films = set()
             for film in suitable_films:
 
@@ -291,9 +290,7 @@ class Recommendations:
         """
         try:
             film_genres_coefficient_sum = sum(target_genres_coefficients.get(genre, 0) for genre in film.genres)
-            similarity = film_genres_coefficient_sum / len(film.genres)
-
-            if similarity >= float(SIMILARITY_COEFFICIENT):
+            if film_genres_coefficient_sum >= float(SIMILARITY_COEFFICIENT):
                 return film
 
         except Exception as e:
