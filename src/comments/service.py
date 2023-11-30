@@ -166,24 +166,6 @@ class CommentCRUD:
                 await websocket.send_json(comment_obj)
             except Exception as e:
                 print(f"Failed to send message to a client: {e}")
-                
-    async def comment_to_dict(self, comment: Comment): 
-            return {
-                "id": comment.id,
-                "film_id": comment.film_id,
-                "user_id": comment.user_id,
-                "username": comment.username,
-                "message": comment.message,
-                "created_at": comment.created_at.strftime("%Y-%m-%d %H:%M:%S")
-            }
-        
-    async def comments_to_dicts(self, comments):
-        return [await self.comment_to_dict(comment) for comment in comments]
-
-    @staticmethod
-    async def dicts_to_json(data):
-        return json.dumps(data, default=str)
-
 
 class CustomEncoder(JSONEncoder):
     def default(self, o):
