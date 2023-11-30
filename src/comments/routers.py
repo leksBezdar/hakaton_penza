@@ -21,10 +21,11 @@ async def create_comment_ws(
     websocket: WebSocket,
     db: AsyncSession = Depends(get_async_session),
 ):
-    await websocket.accept()
-    
+          
     db_manager = DatabaseManager(db)
     comment_crud = db_manager.comment_crud
+    
+    await comment_crud.connect(websocket)
     
     try:
         while True:
@@ -35,10 +36,10 @@ async def create_comment_ws(
                 comment=comment,
             )
 
-            await websocket.send_json(comment_obj)
+            await comment_crud.broadcast_comment(comment_obj)
             
     except WebSocketDisconnect:
-        pass
+        await comment_crud.disconnect(websocket)
     
 @router.post("/create_comment/", response_model=schemas.CommentBase)
 async def create_comment(

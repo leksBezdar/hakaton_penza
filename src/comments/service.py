@@ -2,6 +2,7 @@ from datetime import datetime
 from json import JSONEncoder
 import json
 from uuid import uuid4
+from fastapi import WebSocket
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -22,6 +23,7 @@ class CommentCRUD:
     
     def __init__(self, db: AsyncSession):
         self.db = db
+        self.websockets: list[WebSocket] = []
         
     async def create_comment(self, comment: schemas.CommentCreate) -> Comment:
         
@@ -149,6 +151,21 @@ class CommentCRUD:
         await CommentDAO.delete(self.db, comment_id == Comment.id,)
 
         await self.db.commit()
+        
+    async def connect(self, webSocket: WebSocket):
+        await webSocket.accept()
+        self.websockets.add(webSocket)
+        
+    async def disconnect(self, webSocket: WebSocket):
+        self.websockets.remove(webSocket)
+    
+        
+    async def broadcast_comment(self, comment_obj):
+        for websocket in self.websockets:
+            try:
+                await websocket.send_json(comment_obj)
+            except Exception as e:
+                print(f"Failed to send message to a client: {e}")
         
 
 class CustomEncoder(JSONEncoder):
