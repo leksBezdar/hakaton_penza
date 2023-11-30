@@ -154,7 +154,7 @@ class CommentCRUD:
         
     async def connect(self, webSocket: WebSocket):
         await webSocket.accept()
-        self.websockets.add(webSocket)
+        self.websockets.append(webSocket)
         
     async def disconnect(self, webSocket: WebSocket):
         self.websockets.remove(webSocket)
