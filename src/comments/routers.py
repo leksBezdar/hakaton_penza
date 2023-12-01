@@ -25,12 +25,10 @@ class ConnectionManager:
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
 
-    async def send_personal_message(self, message: str, websocket: WebSocket):
-        await websocket.send_text(message)
 
     async def broadcast(self, message: str):
         for connection in self.active_connections:
-            await connection.send_text(message)
+            await connection.send_json(message)
 
 
 manager = ConnectionManager()
@@ -55,7 +53,6 @@ async def create_comment_ws(
             comment_obj = await comment_crud.create_comment(
                 comment=comment,
             )
-            await manager.send_personal_message(comment_obj, websocket=websocket)
             await manager.broadcast(comment_obj)
             
     except WebSocketDisconnect:
