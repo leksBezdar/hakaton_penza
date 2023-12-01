@@ -32,7 +32,5 @@ class Refresh_token(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     refresh_token: Mapped[str] = mapped_column(index=True)
     expires_at: Mapped[int]
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True),
-                                                 server_default=func.now())
-    user_id: Mapped[str] = mapped_column(ForeignKey(
-        "users.id", ondelete="CASCADE"))
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), server_default=func.now())
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))

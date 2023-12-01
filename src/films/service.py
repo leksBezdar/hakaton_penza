@@ -23,7 +23,7 @@ class FilmCRUD:
         self.db = db
 
     async def create_film(self, film: schemas.FilmCreate) -> Film:
-        
+
         if await self._check_existing_film(film.title, film.poster):
             raise exceptions.FilmAlreadyExists
 
@@ -33,7 +33,7 @@ class FilmCRUD:
                 **film.model_dump(),
             )
         )
-        
+
         logger.debug(f"Создаю фильм: {film}")
         self.db.add(db_film)
         await self.db.commit()
@@ -78,7 +78,7 @@ class FilmCRUD:
 
         return films
 
-    async def get_films_by_name(self, film_name: str) -> list[Film] | None: 
+    async def get_films_by_name(self, film_name: str) -> list[Film] | None:
         """
         Получает информацию о трех фильмах схожих с film_name
         Args:
@@ -128,24 +128,24 @@ class FilmCRUD:
             film_id (int, optional): Идентификатор фильма для удаления.
 
         """
-        logger.debug(f"Удаляю фильм film_title: {film_title} | film_id: {film_id}")
+        logger.debug(
+            f"Удаляю фильм film_title: {film_title} | film_id: {film_id}")
         await FilmDAO.delete(self.db, or_(
             film_id == Film.id,
             film_title == Film.title))
 
         await self.db.commit()
-        
-        
+
     async def _check_existing_film(self, title: str, poster: str) -> bool:
-        
+
         film = await FilmDAO.find_one_or_none(self.db, or_(
             Film.title == title,
             Film.poster == poster,
         ))
-        
+
         return bool(film)
 
-        
+
 class DatabaseManager:
     """
     Класс для управления всеми CRUD-классами и применения изменений к базе данных.

@@ -56,11 +56,13 @@ app.add_middleware(
 
 
 async def on_startup():
-    redis = aioredis.from_url("redis://localhost", encoding="utf8", decode_responses=True)
+    redis = aioredis.from_url(
+        "redis://localhost", encoding="utf8", decode_responses=True)
     FastAPICache.init(RedisBackend(redis), prefix="fastapi-cache")
-    
+
 
 app.add_event_handler("startup", on_startup)
+
 
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
@@ -68,6 +70,7 @@ def home(request: Request):
     <a href="{str(request.url)}docs"><h1>Documentation</h1></a><br>
     <a href="{str(request.url)}redoc"><h1>ReDoc</h1></a>
     """
+
 
 if __name__ == '__main__':
     uvicorn.run("src.main:app", host="0.0.0.0", port=8000, reload=True)

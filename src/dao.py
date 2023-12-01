@@ -50,7 +50,7 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         result = await db.execute(stmt)
 
         return result.scalars().one_or_none()
-    
+
     @classmethod
     async def find_three_or_none(cls, db: AsyncSession, *filter, limit: int = 3) -> Optional[ModelType]:
 

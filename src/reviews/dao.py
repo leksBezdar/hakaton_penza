@@ -6,4 +6,3 @@ from ..dao import BaseDAO
 
 class ReviewDAO(BaseDAO[Review, ReviewCreate, ReviewUpdate]):
     model = Review
-    

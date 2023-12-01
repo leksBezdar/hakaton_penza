@@ -35,6 +35,7 @@ async def get_film(
 
     return await film_crud.get_film(film_id=film_id)
 
+
 @router.get("/get_all_films")
 @cache(expire=60*60*24*7)
 async def get_all_films(
@@ -47,15 +48,17 @@ async def get_all_films(
 
     return await film_crud.get_all_films(offset=offset, limit=limit)
 
+
 @router.get("/get_films_by_name/")
 async def get_films_by_name(
-    film_name: str, 
+    film_name: str,
     db: AsyncSession = Depends(get_async_session)
 ):
     db_manager = DatabaseManager(db)
     film_crud = db_manager.film_crud
 
     return await film_crud.get_films_by_name(film_name)
+
 
 @router.patch("/update_film", response_model=schemas.FilmUpdate)
 async def update_film(
@@ -72,10 +75,10 @@ async def update_film(
 
 @router.delete("/delete_film")
 async def delete_film(
-        film_title: str = None,
-        film_id: int = None,
-        db: AsyncSession = Depends(get_async_session)
-    ):
+    film_title: str = None,
+    film_id: int = None,
+    db: AsyncSession = Depends(get_async_session)
+):
 
     db_manager = DatabaseManager(db)
     film_crud = db_manager.film_crud

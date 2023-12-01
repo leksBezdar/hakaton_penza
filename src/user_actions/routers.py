@@ -19,12 +19,12 @@ async def update_user_list(
     list_type: str,
     db: AsyncSession = Depends(get_async_session),
 ):
-      
+
     db_manager = DatabaseManager(db)
     user_film_crud = db_manager.user_film_crud
-    
+
     return await user_film_crud.update_user_list(
-      token=token,film_id=film_id, list_type=list_type)
+        token=token, film_id=film_id, list_type=list_type)
 
 
 @router.post("/rate_the_film")
@@ -34,17 +34,17 @@ async def rate_the_film(
 ):
 
     db_manager = DatabaseManager(db)
-    user_film_crud = db_manager.user_film_crud 
-    
+    user_film_crud = db_manager.user_film_crud
+
     return await user_film_crud.rate_the_film(rating_data)
 
 
 @router.patch('/rate_review')
 async def rate_review(
-    user_id: str,
-    review_id: int,
-    action: str,
-    db: AsyncSession = Depends(get_async_session)):
+        user_id: str,
+        review_id: int,
+        action: str,
+        db: AsyncSession = Depends(get_async_session)):
 
     db_manager = DatabaseManager(db)
     user_review_crud = db_manager.user_review_crud
@@ -60,5 +60,5 @@ async def get_ratings_for_film(
 
     db_manager = DatabaseManager(db)
     user_film_crud = db_manager.user_film_crud
-    
+
     return await user_film_crud.get_ratings_for_film(film_id)
