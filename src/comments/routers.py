@@ -15,35 +15,37 @@ router = APIRouter()
 
 class ConnectionManager:
     def __init__(self):
-        self.active_connections: list[WebSocket] = []
+        self.active_connections: dict[int, list[WebSocket]] = {}
 
-    async def connect(self, websocket: WebSocket):
+    async def connect(self, film_id: int, websocket: WebSocket):
         await websocket.accept()
-        print(len(self.active_connections))
-        self.active_connections.append(websocket)
+        if film_id not in self.active_connections:
+            self.active_connections[film_id] = []
+        self.active_connections[film_id].append(websocket)
 
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
+    def disconnect(self, film_id: int, websocket: WebSocket):
+        if film_id in self.active_connections:
+            self.active_connections[film_id].remove(websocket)
+            if not self.active_connections[film_id]:
+                del self.active_connections[film_id]
 
-
-    async def broadcast(self, message: str):
-        for connection in self.active_connections:
-            await connection.send_json(message)
-
+    async def broadcast(self, film_id: int, message: str):
+        if film_id in self.active_connections:
+            for connection in self.active_connections[film_id]:
+                await connection.send_json(message)
 
 manager = ConnectionManager()
 
-
-@router.websocket("/ws/comment/create/")
+@router.websocket("/ws/comment/create/{film_id}")
 async def create_comment_ws(
+    film_id: int,
     websocket: WebSocket,
     db: AsyncSession = Depends(get_async_session),
 ):
-          
     db_manager = DatabaseManager(db)
     comment_crud = db_manager.comment_crud
     
-    await manager.connect(websocket)
+    await manager.connect(film_id, websocket)
     
     try:
         while True:
@@ -53,10 +55,10 @@ async def create_comment_ws(
             comment_obj = await comment_crud.create_comment(
                 comment=comment,
             )
-            await manager.broadcast(comment_obj)
+            await manager.broadcast(film_id, comment_obj)
             
     except WebSocketDisconnect:
-        await manager.disconnect(websocket)
+        await manager.disconnect(film_id, websocket)
         
 @router.post("/create_comment/", response_model=schemas.CommentBase)
 async def create_comment(
