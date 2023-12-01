@@ -23,7 +23,6 @@ class CommentCRUD:
     
     def __init__(self, db: AsyncSession):
         self.db = db
-        self.websockets: list[WebSocket] = []
         
     async def create_comment(self, comment: schemas.CommentCreate) -> Comment:
         
@@ -152,20 +151,27 @@ class CommentCRUD:
 
         await self.db.commit()
         
-    async def connect(self, webSocket: WebSocket):
-        await webSocket.accept()
-        self.websockets.append(webSocket)
+    # async def connect(self, webSocket: WebSocket):
+    #     await webSocket.accept()
+    #     print(len(self.websockets))
+    #     self.websockets.append(webSocket)
+    #     for i in self.websockets:
+    #         print(len(self.websockets))
+    #         print(i)
         
-    async def disconnect(self, webSocket: WebSocket):
-        self.websockets.remove(webSocket)
+    # async def disconnect(self, webSocket: WebSocket):
+    #     print(f"{webSocket} disconnected")
+    #     self.websockets.remove(webSocket)
     
+    # async def send_personal_message(self, message: str, websocket: WebSocket):
+    #     await websocket.send_text(message)
         
-    async def broadcast_comment(self, comment_obj):
-        for websocket in self.websockets:
-            try:
-                await websocket.send_json(comment_obj)
-            except Exception as e:
-                print(f"Failed to send message to a client: {e}")
+    # async def broadcast_comment(self, comment_obj):
+    #     for websocket in self.websockets:
+    #         try:
+    #             await websocket.send_json(comment_obj)
+    #         except Exception as e:
+    #             print(f"Failed to send message to a client: {e}")
 
 class CustomEncoder(JSONEncoder):
     def default(self, o):

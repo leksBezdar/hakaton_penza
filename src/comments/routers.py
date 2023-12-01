@@ -1,9 +1,5 @@
-import asyncio
-import json
-
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
-from sqlalchemy import text
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,8 +13,30 @@ from ..database import get_async_session
 
 router = APIRouter()
 
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: list[WebSocket] = []
 
-@router.websocket("/ws/comment/create")
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        print(len(self.active_connections))
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def send_personal_message(self, message: str, websocket: WebSocket):
+        await websocket.send_text(message)
+
+    async def broadcast(self, message: str):
+        for connection in self.active_connections:
+            await connection.send_text(message)
+
+
+manager = ConnectionManager()
+
+
+@router.websocket("/ws/comment/create/")
 async def create_comment_ws(
     websocket: WebSocket,
     db: AsyncSession = Depends(get_async_session),
@@ -27,7 +45,7 @@ async def create_comment_ws(
     db_manager = DatabaseManager(db)
     comment_crud = db_manager.comment_crud
     
-    await comment_crud.connect(websocket)
+    await manager.connect(websocket)
     
     try:
         while True:
@@ -37,11 +55,11 @@ async def create_comment_ws(
             comment_obj = await comment_crud.create_comment(
                 comment=comment,
             )
-
-            await comment_crud.broadcast_comment(comment_obj)
+            await manager.send_personal_message(comment_obj, websocket=websocket)
+            await manager.broadcast(comment_obj)
             
     except WebSocketDisconnect:
-        await comment_crud.disconnect(websocket)
+        await manager.disconnect(websocket)
         
 @router.post("/create_comment/", response_model=schemas.CommentBase)
 async def create_comment(
